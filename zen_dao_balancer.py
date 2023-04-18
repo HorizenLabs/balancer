@@ -11,7 +11,7 @@ ROSETTA_REQUEST_TEMPLATE = {"network_identifier": {
     }}
 
 MC_ADDRESS_MAP = {
-    "0x72661045bA9483EDD3feDe4A73688605b51d40c0": ["ztbX9Kg53BYK8iJ8cydJp3tBYcmzT8Vtxn7"]
+    "0x72661045bA9483EDD3feDe4A73688605b51d40c0": ["ztbX9Kg53BYK8iJ8cydJp3tBYcmzT8Vtxn7", "ztUSSkdLdgCG2HnwjrEKorauUR2JXV26u7v"]
 }
 
 def api_server():
