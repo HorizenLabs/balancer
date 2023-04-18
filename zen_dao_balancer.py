@@ -66,10 +66,10 @@ def api_server():
             # Call Rosetta endpoint /account/balance
             for mc_address in mc_addresses:
                 request_body = ROSETTA_REQUEST_TEMPLATE
-                request_body["account_identifier"] = {"address": mc_address, "metadata": []}
+                request_body["account_identifier"] = {"address": mc_address, "metadata": {}}
                 print(f"Rosetta request: {request_body}")
                 response = requests.post(ROSETTA_URL+"account/balance", json.dumps(request_body))
-                amount = int(response.json()["balances"]["value"])
+                amount = int(response.json()["balances"][0]["value"])
                 balance += amount
         return json.dumps({"balance": balance})
         
