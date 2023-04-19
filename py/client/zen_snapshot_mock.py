@@ -2,19 +2,34 @@ import requests
 import sys
 import json
 
-HTTP_SERVER_URL = "http://localhost:5000/"
-CREATE_PROPOSAL_MOCK = "Proposal mock"
+
+
+LOCAL_HTTP_SERVER_URL = "http://localhost:5000/"
+REMOTE_HTTP_SERVER_URL = "http://testnet-zendao-1.de.horizenlabs.io:5000/"
+
+HTTP_SERVER_URL = LOCAL_HTTP_SERVER_URL
+#HTTP_SERVER_URL = REMOTE_HTTP_SERVER_URL
+
+
+CREATE_PROPOSAL_MOCK = {
+    "Body": "Start: 18 Apr 23 13:40 UTC\nEnd: 18 Apr 23 13:45 UTC\nAuthor: 0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959",
+    "ProposalEvent": "proposal/created",
+    "ProposalExpire": 0,
+    "ProposalID": "proposal/0xeca96e839070fff6f6c5140fcf4939779794feb6028edecc03d5f518133cabc6",
+    "ProposalSpace": "victorbibiano.eth"
+}
 GET_VOTING_POWER_MOCK = {
-        "options": {
-          "url": "https://dweet.io:443/dweet/quietly/for/victestapirose001",
-          "type": "api-post"
-        },
-        "network": 80001,
-        "snapshot": 34482521,
-        "addresses": [
-          "0x72661045bA9483EDD3feDe4A73688605b51d40c0"
-        ]
-      }
+    'options': {
+        'url': 'http://testnet-zendao-1.de.horizenlabs.io:5000/api/v1/getVotingPower',
+        'type': 'api-post'
+    },
+    'network': '80001',
+    'snapshot': 34522768,
+    'addresses': [
+        '0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959'
+    ]
+}
+
 
 def new_proposal():
     print(f"Calling new proposal with data {CREATE_PROPOSAL_MOCK}")
