@@ -30,6 +30,11 @@ GET_VOTING_POWER_MOCK = {
     ]
 }
 
+ADD_OWNERSHIP_MOCK = {
+    'owner': '0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959',
+    'address': 'ztWBHD2Eo6uRLN6xAYxj8mhmSPbUYrvMPwt'
+}
+
 
 def new_proposal():
     print(f"Calling new proposal with data {CREATE_PROPOSAL_MOCK}")
@@ -42,6 +47,18 @@ def get_voting_power():
     response = requests.post(HTTP_SERVER_URL+"api/v1/getVotingPower", json.dumps(GET_VOTING_POWER_MOCK))
     print(json.dumps(response.json(), indent=4))
 
+def add_ownership(owner, address):
+    if owner== None or address== None:
+        data = ADD_OWNERSHIP_MOCK
+    else:
+        data = {
+                'owner': owner,
+                'address': address
+        }
+    print(f"Calling add ownership with data {data}")
+    response = requests.post(HTTP_SERVER_URL + "api/v1/addOwnership", json.dumps(data))
+    print(json.dumps(response.json(), indent=4))
+
 def get_proposals():
     print("Calling get proposals")
     response = requests.post(HTTP_SERVER_URL + "api/v1/getProposals", json.dumps({}))
@@ -49,6 +66,10 @@ def get_proposals():
 
 def main():
     args = sys.argv[1:]
+
+    if len(args) == 0:
+        print("command not specified!")
+        return
 
     # Command to execute
     command = args[0]
@@ -58,6 +79,11 @@ def main():
         get_voting_power()
     elif (command == "get_proposals"):
         get_proposals()
+    elif (command == "add_ownership"):
+        if len(args) > 2:
+            add_ownership(args[1], args[2])
+        else:
+            add_ownership(None, None)
     else:
         print("Unsupported command!")
 

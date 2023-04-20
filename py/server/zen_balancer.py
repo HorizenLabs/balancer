@@ -1,7 +1,10 @@
 import datetime
 import re
+import string
 import sys
 import threading
+
+import base58
 import requests
 
 from flask import Flask, request, json
@@ -77,10 +80,81 @@ def store_proposal_data(proposal_json, chain_tip_height, chain_tip_hash):
     proposal_dict[id] = prop
     active_proposal = prop
 
+def add_ownership_entry(data_json):
+    try:
+        new_owner = data_json['owner']
+        new_addr = data_json['address']
+        base58.b58decode_check(new_addr)
+
+    except KeyError as e:
+        response = {
+            "error": {
+                "code": 102,
+                "description": "Can not add ownership",
+                "detail": "invalid json request data, coul not find field: " + str(e)
+            }
+        }
+    except ValueError as e:
+        response = {
+            "error": {
+                "code": 103,
+                "description": "Can not add ownership",
+                "detail": "address not valid: " + str(e)
+            }
+        }
+    else:
+        if len(new_owner) != 42 or not all(c in string.hexdigits for c in new_owner[2:]):
+            response = {
+                "error": {
+                    "code": 104,
+                    "description": "Can not add ownership",
+                    "detail": "Invalid owner string length != 42 or not an hex string"
+                }
+            }
+        else:
+
+            if new_owner in MC_ADDRESS_MAP.keys():
+                addresses = MC_ADDRESS_MAP[data_json['owner']]
+                found = False
+                for entry in addresses:
+                    if entry == new_addr:
+                        found = True
+                        break
+                if not found:
+                    addresses.append(data_json['address'])
+                    response = {"status": "Ok"}
+                else:
+                    response = {
+                        "error": {
+                            "code": 102,
+                            "description": "Can not add ownership",
+                            "detail": "Ownership already set"
+                        }
+                    }
+            else:
+                MC_ADDRESS_MAP[new_owner] = [new_addr]
+                response = {"status": "Ok"}
+
+    return response
+
 
 def api_server():
     app = Flask(__name__)
 
+
+    @app.route('/api/v1/addOwnership', methods=['POST'])
+    def add_ownership():
+        proposal = json.loads(request.data)
+
+        print_incoming("BalancerApiServer", "/api/v1/addOwnership", proposal)
+
+        ret = {
+            'result' : add_ownership_entry(proposal),
+            'ownerships': MC_ADDRESS_MAP,
+        }
+        print_outgoing("BalancerApiServer", "/api/v1/addOwnership", ret)
+
+        return json.dumps(ret)
 
     @app.route('/api/v1/getProposals', methods=['POST'])
     def get_proposals():
@@ -91,6 +165,7 @@ def api_server():
         print_outgoing("BalancerApiServer", "/api/v1/getProposals", response)
 
         return json.dumps(response)
+
 
 
     @app.route('/api/v1/createProposal', methods=['POST'])
