@@ -20,16 +20,25 @@ ROSETTA_REQUEST_TEMPLATE = {
 
 MOCK_ROSETTA_GET_BALANCE_RESP = {
     "score": [
-        {"address": "0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959",
-         "score": ((123456789)),
-         "decimal": 8
+        {
+            "address": "0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959",
+            "score": 123456789,
+            "decimal": 8
          }
     ]
 }
 
 MC_ADDRESS_MAP = {
-    "0x72661045bA9483EDD3feDe4A73688605b51d40c0": ["ztWBHD2Eo6uRLN6xAYxj8mhmSPbUYrvMPwt"],
-    "0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959": ["ztbX9Kg53BYK8iJ8cydJp3tBYcmzT8Vtxn7", "ztUSSkdLdgCG2HnwjrEKorauUR2JXV26u7v"]
+    "0x72661045bA9483EDD3feDe4A73688605b51d40c0": [
+        "ztWBHD2Eo6uRLN6xAYxj8mhmSPbUYrvMPwt"
+    ],
+    "0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959": [
+        "ztbX9Kg53BYK8iJ8cydJp3tBYcmzT8Vtxn7",
+        "ztUSSkdLdgCG2HnwjrEKorauUR2JXV26u7v"
+    ],
+    "0xf43F35c1A3E36b5Fb554f5E830179cc460c35858": [
+        "ztYztK6dH2HiK1mTL1byWGY5hx1TaGNPuen"
+    ]
 }
 
 
@@ -41,10 +50,14 @@ active_proposal = None
 def print_incoming(component_tag, endpoint_tag, content):
     print("<<<< " + component_tag + " " + endpoint_tag + " received:")
     print(json.dumps(content, indent=4))
+    print()
+
 
 def print_outgoing(component_tag, endpoint_tag, content):
     print(">>>> " + component_tag + " " + endpoint_tag + " sending:")
     print(json.dumps(content, indent=4))
+    print()
+
 
 def extract_body_attributes(body_string):
     # "Body": "Start: 18 Apr 23 13:40 UTC, End: 18 Apr 23 13:45 UTC, Author: 0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959"
@@ -89,15 +102,15 @@ def add_ownership_entry(data_json):
     except KeyError as e:
         response = {
             "error": {
-                "code": 102,
+                "code": 101,
                 "description": "Can not add ownership",
-                "detail": "invalid json request data, coul not find field: " + str(e)
+                "detail": "invalid json request data, could not find field: " + str(e)
             }
         }
     except ValueError as e:
         response = {
             "error": {
-                "code": 103,
+                "code": 102,
                 "description": "Can not add ownership",
                 "detail": "address not valid: " + str(e)
             }
@@ -106,7 +119,7 @@ def add_ownership_entry(data_json):
         if len(new_owner) != 42 or not all(c in string.hexdigits for c in new_owner[2:]):
             response = {
                 "error": {
-                    "code": 104,
+                    "code": 103,
                     "description": "Can not add ownership",
                     "detail": "Invalid owner string length != 42 or not an hex string"
                 }
@@ -126,7 +139,7 @@ def add_ownership_entry(data_json):
                 else:
                     response = {
                         "error": {
-                            "code": 102,
+                            "code": 104,
                             "description": "Can not add ownership",
                             "detail": "Ownership already set"
                         }
@@ -173,29 +186,47 @@ def api_server():
 
         proposal = json.loads(request.data)
         print_incoming("BalancerApiServer", "/api/v1/createProposal", proposal)
+        try:
+            # update MC chain tip. This block will be used when retieving balances from Rosetta
+            (chain_tip_height, chain_tip_hash) = get_chain_tip()
+        except Exception as e:
+            response = {
+                "error": {
+                    "code": 105,
+                    "description": "Can not create proposal",
+                    "detail": "can not determine main chain best block: " + str(e)
+                }
+            }
+        else:
+            try:
+                store_proposal_data(proposal,  chain_tip_height, chain_tip_hash)
+            except Exception as e:
+                response = {
+                    "error": {
+                        "code": 106,
+                        "description": "Can not create proposal",
+                        "detail": "proposal data format not expected: " + str(e)
+                    }
+                }
+            else:
+                response = {"status": "Ok"}
 
-        # update MC chain tip. This block will be used when retieving balances from Rosetta
-        (chain_tip_height, chain_tip_hash) = get_chain_tip()
-
-        store_proposal_data(proposal,  chain_tip_height, chain_tip_hash)
-
-        response = {"status": "Ok"}
-        print_outgoing("BalancerApiServer", "/api/v1/createProposal", response)
+            print_outgoing("BalancerApiServer", "/api/v1/createProposal", response)
 
         return json.dumps(response)
 
 
-    @app.route('/api/v1/getVotingPower', methods=['POST'])
+    @app.route('/api/v1/getVotingPower', methods=['GET'])
     def get_voting_power():
         global active_proposal
 
-        content = json.loads(request.data)
+        content = request.args
         print_incoming("BalancerApiServer", "/api/v1/getVotingPower", content)
 
         if (active_proposal == None):
             err = {
                 "error": {
-                    "code": 101,
+                    "code": 107,
                     "description": "No proposal have been received at this point",
                     "detail": "Proposal should be received before getting voting power"
                 }
@@ -207,10 +238,10 @@ def api_server():
             print("getting voting power for active proposal: " + json.dumps(active_proposal.toJSON(), indent=4))
 
 
-        # Parse requested addresses
-        requested_address = content["addresses"][0]
+        # Parse requested address. In GET this is one address actually
+        requested_address = content["addresses"]
 
-        # Retrieve balance for the addresses
+        # Retrieve balance for the owned MC addresses
         response = get_address_balance(requested_address)
 
         # Answer back with the balance
@@ -225,7 +256,7 @@ def api_server():
         if active_proposal == None:
             return {
                 "error": {
-                    "code": 100,
+                    "code": 108,
                     "description": "Reference MC block not defined",
                     "detail": "Reference block should be retrieved from Rosetta when a voting proposal is created"
                 }

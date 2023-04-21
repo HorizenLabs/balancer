@@ -42,9 +42,14 @@ def new_proposal():
     response = requests.post(HTTP_SERVER_URL+"api/v1/createProposal", json.dumps(post_data))
     print(json.dumps(response.json(), indent=4))
 
-def get_voting_power():
+def get_voting_power2():
     print(f"Calling get voting power with data {GET_VOTING_POWER_MOCK}")
     response = requests.post(HTTP_SERVER_URL+"api/v1/getVotingPower", json.dumps(GET_VOTING_POWER_MOCK))
+    print(json.dumps(response.json(), indent=4))
+
+def get_voting_power():
+    print(f"Calling get voting power with data {GET_VOTING_POWER_MOCK}")
+    response = requests.get(HTTP_SERVER_URL+"api/v1/getVotingPower", GET_VOTING_POWER_MOCK)
     print(json.dumps(response.json(), indent=4))
 
 def add_ownership(owner, address):
