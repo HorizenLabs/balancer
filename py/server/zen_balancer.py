@@ -10,11 +10,19 @@ import requests
 from flask import Flask, request, json
 from proposal import VotingProposal
 
+
+NETWORK = "test"
+#NETWORK = "main"
+
+NSC_URL = "http://zendao-tn-1.de.horizenlabs.io:8200/"
+#NSC_URL = "http://localhost:8200/"
+
+
 ROSETTA_URL = "http://localhost:8080/"
 ROSETTA_REQUEST_TEMPLATE = {
     "network_identifier": {
         "blockchain": "Zen",
-        "network": "test"
+        "network": NETWORK
     }
 }
 
@@ -43,6 +51,7 @@ MC_ADDRESS_MAP = {
 
 
 mock_rosetta = False
+mock_nsc = False
 
 proposal_dict = {}
 active_proposal = None
@@ -127,6 +136,7 @@ def add_ownership_entry(data_json):
         else:
 
             if new_owner in MC_ADDRESS_MAP.keys():
+                # this is actually a reference
                 addresses = MC_ADDRESS_MAP[data_json['owner']]
                 found = False
                 for entry in addresses:
@@ -166,6 +176,21 @@ def api_server():
             'ownerships': MC_ADDRESS_MAP,
         }
         print_outgoing("BalancerApiServer", "/api/v1/addOwnership", ret)
+
+        return json.dumps(ret)
+
+    @app.route('/api/v1/getOwnerships', methods=['POST'])
+    def get_ownerships():
+        proposal = json.loads(request.data)
+
+        print_incoming("BalancerApiServer", "/api/v1/getOwnerships", proposal)
+
+        if mock_nsc:
+            ret = MC_ADDRESS_MAP
+        else:
+            sc_address = proposal['scAddress']
+            ret = get_nsc_ownerships(sc_address)
+        print_outgoing("BalancerApiServer", "/api/v1/getOwnerships", ret)
 
         return json.dumps(ret)
 
@@ -307,6 +332,15 @@ def api_server():
         bestblockhash = str(response.json()["current_block_identifier"]["hash"])
 
         return chain_height, bestblockhash
+
+    def get_nsc_ownerships(sc_address=None):
+        # Call eon endpoint /transaction/getKeysOwnership which call NativeSmartContract interface
+        request_body = {"scAddressOpt" : sc_address}
+        print_outgoing("NSC", "/transaction/getKeysOwnership", request_body)
+        response = requests.post(NSC_URL + "transaction/getKeysOwnership", json.dumps(request_body), auth=('user', 'Horizen'))
+        print_incoming("NSC", "/transaction/getKeysOwnership", response.json())
+        return response.json()['result']['keysOwnership']
+
 
     app.run(host = "0.0.0.0", port = 5000)
 
