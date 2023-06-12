@@ -41,7 +41,7 @@ MOCK_ROSETTA_GET_BALANCE_RESP = {
     ]
 }
 
-MC_ADDRESS_MAP = {
+MOCK_MC_ADDRESS_MAP = {
     "0x72661045bA9483EDD3feDe4A73688605b51d40c0": [
         "ztWBHD2Eo6uRLN6xAYxj8mhmSPbUYrvMPwt"
     ],
@@ -140,9 +140,9 @@ def add_ownership_entry(data_json):
             }
         else:
 
-            if new_owner in MC_ADDRESS_MAP.keys():
+            if new_owner in MOCK_MC_ADDRESS_MAP.keys():
                 # this is actually a reference
-                addresses = MC_ADDRESS_MAP[data_json['owner']]
+                addresses = MOCK_MC_ADDRESS_MAP[data_json['owner']]
                 found = False
                 for entry in addresses:
                     if entry == new_addr:
@@ -160,10 +160,94 @@ def add_ownership_entry(data_json):
                         }
                     }
             else:
-                MC_ADDRESS_MAP[new_owner] = [new_addr]
+                MOCK_MC_ADDRESS_MAP[new_owner] = [new_addr]
                 response = {"status": "Ok"}
 
     return response
+
+def check_sc_address(sc_address):
+    sc_address = remove_0x_prefix(sc_address)
+
+    if (len(sc_address) != 40):
+        raise Exception("Invalid sc address length: {}, expected 40".format(len(sc_address)))
+
+    # this throws an exception if not an hex string
+    hex_str_to_bytes(sc_address)
+
+def get_nsc_ownerships(sc_address=None):
+
+
+    if sc_address is None:
+        method = 'getAllKeyOwnerships()'
+        abi_str = encode_hex(function_signature_to_4byte_selector(method))
+    else:
+        sc_address = remove_0x_prefix(sc_address)
+        check_sc_address(sc_address)
+        method = 'getKeyOwnerships(address)'
+        abi_method_str = encode_hex(function_signature_to_4byte_selector(method))
+        abi_str = abi_method_str + "000000000000000000000000" + sc_address
+
+    request_body = {
+      "jsonrpc": "2.0",
+      "method": "eth_call",
+      "params": [
+        {
+          "from": "0x00c8f107a09cd4f463afc2f1e6e5bf6022ad4600",
+          "to": "0x0000000000000000000088888888888888888888",
+          "value": "0x00",
+          "gasLimit": "0x21000",
+          "maxPriorityFeePerGas": "0x900000000",
+          "maxFeePerGas": "0x900000000",
+          "data": abi_str
+        }
+      ],
+      "id": 1
+    }
+    print_outgoing("NSC", "/ethv1/eth_call (getKeysOwnership)", request_body)
+    response = requests.post(NSC_URL + "ethv1", json.dumps(request_body), auth=('user', 'Horizen'))
+    abiReturnValue = remove_0x_prefix(response.json()['result'])
+
+    ret = get_key_ownership_from_abi(abiReturnValue)
+    print_incoming("NSC", "/ethv1/eth_call (getKeysOwnership)", response.json())
+    return ret
+
+def hex_str_to_bytes(hex_str):
+    return unhexlify(hex_str.encode('ascii'))
+
+def get_key_ownership_from_abi(abiReturnValue):
+    # the location of the data part of the first (the only one in this case) parameter (dynamic type), measured in bytes from the start
+    # of the return data block. In this case 32 (0x20)
+    start_data_offset = decode(['uint32'], hex_str_to_bytes(abiReturnValue[0:64]))[0] * 2
+
+    end_offset = start_data_offset + 64  # read 32 bytes
+    list_size = decode(['uint32'], hex_str_to_bytes(abiReturnValue[start_data_offset:end_offset]))[0]
+
+    sc_associations_dict = {}
+    for i in range(list_size):
+        start_offset = end_offset
+        end_offset = start_offset + 192  # read (32 + 32 + 32) bytes
+        (address_pref, mca3, mca32) = decode(['address', 'bytes3', 'bytes32'],
+                                             hex_str_to_bytes(abiReturnValue[start_offset:end_offset]))
+        sc_address_checksum_fmt = to_checksum_address(address_pref)
+        print("sc addr=" + sc_address_checksum_fmt)
+        if sc_associations_dict.get(sc_address_checksum_fmt) is not None:
+            mc_addr_list = sc_associations_dict.get(sc_address_checksum_fmt)
+        else:
+            sc_associations_dict[sc_address_checksum_fmt] = []
+            mc_addr_list = []
+        mc_addr = (mca3 + mca32).decode('utf-8')
+        mc_addr_list.append(mc_addr)
+        print("mc addr=" + mc_addr)
+        sc_associations_dict[sc_address_checksum_fmt] = mc_addr_list
+
+    pprint.pprint(sc_associations_dict)
+    return (sc_associations_dict)
+
+def get_mc_address_map(sc_address=None):
+    if (mock_nsc):
+        return MOCK_MC_ADDRESS_MAP
+    else:
+        return get_nsc_ownerships(sc_address)
 
 
 def api_server():
@@ -176,10 +260,19 @@ def api_server():
 
         print_incoming("BalancerApiServer", "/api/v1/addOwnership", proposal)
 
-        ret = {
-            'result' : add_ownership_entry(proposal),
-            'ownerships': MC_ADDRESS_MAP,
-        }
+        if mock_nsc:
+            ret = {
+                'result' : add_ownership_entry(proposal),
+                'ownerships': MOCK_MC_ADDRESS_MAP,
+            }
+        else:
+            ret = {
+                "error": {
+                    "code": 109,
+                    "description": "Could not add ownership",
+                    "detail": "Method not supported with real native smart contract. Pls set \'mock_nsc=true\' in balancer"
+                }
+            }
         print_outgoing("BalancerApiServer", "/api/v1/addOwnership", ret)
 
         return json.dumps(ret)
@@ -191,10 +284,20 @@ def api_server():
         print_incoming("BalancerApiServer", "/api/v1/getOwnerships", proposal)
 
         if mock_nsc:
-            ret = MC_ADDRESS_MAP
+            ret = MOCK_MC_ADDRESS_MAP
         else:
-            sc_address = remove_0x_prefix(proposal['scAddress'])
-            ret = get_nsc_ownerships(sc_address)
+            sc_address = proposal['scAddress']
+            try:
+                ret = get_mc_address_map(sc_address)
+            except Exception as e:
+                ret = {
+                "error": {
+                    "code": 108,
+                    "description": "Could not get ownership for sc address:" + sc_address,
+                    "detail": "An exception occurred: " + str(e)
+                }
+            }
+
         print_outgoing("BalancerApiServer", "/api/v1/getOwnerships", ret)
 
         return json.dumps(ret)
@@ -279,9 +382,6 @@ def api_server():
         return json.dumps(response)
     
     def get_address_balance(sc_address):
-        if mock_rosetta:
-            # don't go on rosetta, just mock it
-            return MOCK_ROSETTA_GET_BALANCE_RESP
 
         if active_proposal == None:
             return {
@@ -295,8 +395,24 @@ def api_server():
         # Retrieve associated MC addresses balance
         balance = 0
 
-        if sc_address in MC_ADDRESS_MAP:
-            mc_addresses = MC_ADDRESS_MAP[sc_address]
+        try:
+            mc_address_map = get_mc_address_map(sc_address)
+        except Exception as e:
+            return {
+                "error": {
+                    "code": 108,
+                    "description": "Could not get ownership for sc address:" + sc_address,
+                    "detail": "An exception occurred: " + str(e)
+                }
+            }
+
+        if sc_address in mc_address_map:
+            mc_addresses = mc_address_map[sc_address]
+
+            if mock_rosetta:
+                # don't go on rosetta, just mock it
+                print("-------------MOCK ROSETTA RESPONSE------------")
+                return MOCK_ROSETTA_GET_BALANCE_RESP
 
             # Call Rosetta endpoint /account/balance
             for mc_address in mc_addresses:
@@ -345,71 +461,6 @@ def api_server():
         response = requests.post(NSC_URL + "transaction/getKeysOwnership", json.dumps(request_body), auth=('user', 'Horizen'))
         print_incoming("NSC", "/transaction/getKeysOwnership", response.json())
         return response.json()['result']['keysOwnership']
-
-    def get_nsc_ownerships(sc_address=None):
-        if sc_address is None:
-            method = 'getAllKeyOwnerships()'
-            abi_str = encode_hex(function_signature_to_4byte_selector(method))
-        else:
-            method = 'getKeyOwnerships(address)'
-            abi_method_str = encode_hex(function_signature_to_4byte_selector(method))
-            abi_str = abi_method_str + "000000000000000000000000" + sc_address
-
-        request_body = {
-          "jsonrpc": "2.0",
-          "method": "eth_call",
-          "params": [
-            {
-              "from": "0x00c8f107a09cd4f463afc2f1e6e5bf6022ad4600",
-              "to": "0x0000000000000000000088888888888888888888",
-              "value": "0x00",
-              "gasLimit": "0x21000",
-              "maxPriorityFeePerGas": "0x900000000",
-              "maxFeePerGas": "0x900000000",
-              "data": abi_str
-            }
-          ],
-          "id": 1
-        }
-        print_outgoing("NSC", "/ethv1/eth_call (getKeysOwnership)", request_body)
-        response = requests.post(NSC_URL + "ethv1", json.dumps(request_body), auth=('user', 'Horizen'))
-        abiReturnValue = remove_0x_prefix(response.json()['result'])
-
-        ret = get_key_ownership_from_abi(abiReturnValue)
-        print_incoming("NSC", "/ethv1/eth_call (getKeysOwnership)", response.json())
-        return ret
-
-    def hex_str_to_bytes(hex_str):
-        return unhexlify(hex_str.encode('ascii'))
-
-    def get_key_ownership_from_abi(abiReturnValue):
-        # the location of the data part of the first (the only one in this case) parameter (dynamic type), measured in bytes from the start
-        # of the return data block. In this case 32 (0x20)
-        start_data_offset = decode(['uint32'], hex_str_to_bytes(abiReturnValue[0:64]))[0] * 2
-
-        end_offset = start_data_offset + 64  # read 32 bytes
-        list_size = decode(['uint32'], hex_str_to_bytes(abiReturnValue[start_data_offset:end_offset]))[0]
-
-        sc_associations_dict = {}
-        for i in range(list_size):
-            start_offset = end_offset
-            end_offset = start_offset + 192  # read (32 + 32 + 32) bytes
-            (address_pref, mca3, mca32) = decode(['address', 'bytes3', 'bytes32'],
-                                                 hex_str_to_bytes(abiReturnValue[start_offset:end_offset]))
-            sc_address_checksum_fmt = to_checksum_address(address_pref)
-            print("sc addr=" + sc_address_checksum_fmt)
-            if sc_associations_dict.get(sc_address_checksum_fmt) is not None:
-                mc_addr_list = sc_associations_dict.get(sc_address_checksum_fmt)
-            else:
-                sc_associations_dict[sc_address_checksum_fmt] = []
-                mc_addr_list = []
-            mc_addr = (mca3 + mca32).decode('utf-8')
-            mc_addr_list.append(mc_addr)
-            print("mc addr=" + mc_addr)
-            sc_associations_dict[sc_address_checksum_fmt] = mc_addr_list
-
-        pprint.pprint(sc_associations_dict)
-        return (sc_associations_dict)
 
     app.run(host = "0.0.0.0", port = 5000)
 

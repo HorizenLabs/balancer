@@ -20,13 +20,13 @@ CREATE_PROPOSAL_MOCK = {
 }
 GET_VOTING_POWER_MOCK = {
     'options': {
-        'url': 'http://testnet-zendao-1.de.horizenlabs.io:5000/api/v1/getVotingPower',
+        'url': HTTP_SERVER_URL+'api/v1/getVotingPower',
         'type': 'api-post'
     },
     'network': '80001',
     'snapshot': 34522768,
     'addresses': [
-        '0xf43F35c1A3E36b5Fb554f5E830179cc460c358580'
+        '0xf43F35c1A3E36b5Fb554f5E830179cc460c35858'
     ]
 }
 
@@ -56,7 +56,7 @@ def get_voting_power(address):
     if address is not None:
         cmd = {
             'options': {
-                'url': 'http://testnet-zendao-1.de.horizenlabs.io:5000/api/v1/getVotingPower',
+                'url': HTTP_SERVER_URL+'/api/v1/getVotingPower',
                 'type': 'api-post'
             },
             'network': '80001',
