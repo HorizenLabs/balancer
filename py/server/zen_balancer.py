@@ -2,10 +2,10 @@ import sys
 import threading
 from flask import Flask, request, json
 
-from py.server.core_methods import print_incoming, add_ownership_entry, \
+from core_methods import print_incoming, add_ownership_entry, \
     print_outgoing, get_mc_address_map, get_chain_tip, store_proposal_data, get_address_balance, get_active_proposal, \
     proposal_dict
-from py.server.definitions import mock_nsc, MOCK_MC_ADDRESS_MAP
+from definitions import mock_nsc, MOCK_MC_ADDRESS_MAP
 
 
 def api_server():

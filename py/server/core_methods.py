@@ -9,10 +9,10 @@ import requests
 from eth_abi import decode
 from eth_utils import remove_0x_prefix, to_checksum_address, function_signature_to_4byte_selector, encode_hex
 
-from py.server.definitions import MOCK_MC_ADDRESS_MAP, NSC_URL, mock_nsc, mock_rosetta, MOCK_ROSETTA_GET_BALANCE_RESP, \
+from definitions import MOCK_MC_ADDRESS_MAP, NSC_URL, mock_nsc, mock_rosetta, MOCK_ROSETTA_GET_BALANCE_RESP, \
     ROSETTA_REQUEST_TEMPLATE, ROSETTA_URL
-from py.server.proposal import VotingProposal
-from py.server.util_methods import print_outgoing, print_incoming, check_sc_address
+from proposal import VotingProposal
+from util_methods import print_outgoing, print_incoming, check_sc_address
 
 active_proposal = VotingProposal(in_id=None)
 
