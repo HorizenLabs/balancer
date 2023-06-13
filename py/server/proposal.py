@@ -1,15 +1,13 @@
-import json
-
 class VotingProposal(object):
-    def __init__(self, id, bl_height, bl_hash, from_time, to_time, author):
-        self.id = id
+    def __init__(self, in_id, bl_height=0, bl_hash="", from_time=None, to_time=None, author=""):
+        self.id = in_id
         self.block_height = bl_height
         self.block_hash = bl_hash
         self.fromTime = from_time
         self.toTime = to_time
         self.author = author
 
-    def toJSON(self):
+    def to_json(self):
         return {
             "Proposal": {
                 "ID": self.id,
@@ -20,3 +18,6 @@ class VotingProposal(object):
                 "Author": self.author
             }
         }
+
+    def is_null(self):
+        return self.id is None

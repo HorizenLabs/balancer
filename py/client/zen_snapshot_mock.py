@@ -1,3 +1,5 @@
+from random import randrange
+
 import requests
 import sys
 import json
@@ -7,8 +9,8 @@ import json
 LOCAL_HTTP_SERVER_URL = "http://localhost:5000/"
 REMOTE_HTTP_SERVER_URL = "http://zendao-tn-1.de.horizenlabs.io:5000/"
 
-HTTP_SERVER_URL = LOCAL_HTTP_SERVER_URL
-#HTTP_SERVER_URL = REMOTE_HTTP_SERVER_URL
+#HTTP_SERVER_URL = LOCAL_HTTP_SERVER_URL
+HTTP_SERVER_URL = REMOTE_HTTP_SERVER_URL
 
 
 CREATE_PROPOSAL_MOCK = {
@@ -37,6 +39,8 @@ ADD_OWNERSHIP_MOCK = {
 
 
 def new_proposal():
+    val = hex(randrange(255))[2:]
+    CREATE_PROPOSAL_MOCK['ProposalID'] = "proposal/0xeca96e839070fff6f6c5140fcf4939779794feb6028edecc03d5f518133c"+str(val)
     print(f"Calling new proposal with data {CREATE_PROPOSAL_MOCK}")
     post_data = CREATE_PROPOSAL_MOCK
     response = requests.post(HTTP_SERVER_URL+"api/v1/createProposal", json.dumps(post_data))
