@@ -1,9 +1,11 @@
-
-
 # Native smart contract is reachable via this end points
 NSC_URL = "http://zendao-tn-1.de.horizenlabs.io:8200/"
 # NSC_URL = "http://zendao-test-tn-1.us.horizenlabs.io/dev1/"
 # NSC_URL = "http://localhost:8200/"
+
+# This is the address which is used for calling eth_call which invokes the NSC. Some fund must be stored there
+# otherwise the call fails (no sufficient balance)
+ETH_CALL_FROM_ADDRESS = "0x00c8f107a09cd4f463afc2f1e6e5bf6022ad4600"
 
 # A rosetta instance is running locally (if not mocked)
 ROSETTA_URL = "http://localhost:8080/"
@@ -35,7 +37,7 @@ MOCK_ROSETTA_GET_BALANCE_RESP = {
 mock_nsc = False
 
 # when a Native smart contract is not available this can be helpful
-# see mock_nsc option
+# see mock_nsc setting
 MOCK_MC_ADDRESS_MAP = {
     "0x72661045bA9483EDD3feDe4A73688605b51d40c0": [
         "ztWBHD2Eo6uRLN6xAYxj8mhmSPbUYrvMPwt"
