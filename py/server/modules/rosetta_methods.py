@@ -1,9 +1,9 @@
 import json
 import requests
 
-from py.server.snapshot.snapshot_methods import get_mc_address_map, get_active_proposal
-from py.server.definitions import mock_rosetta, MOCK_ROSETTA_GET_BALANCE_RESP, ROSETTA_REQUEST_TEMPLATE, ROSETTA_URL
-from py.server.utils.util_methods import print_outgoing, print_incoming
+from .snapshot_methods import get_mc_address_map, get_active_proposal
+from .definitions import mock_rosetta, MOCK_ROSETTA_GET_BALANCE_RESP, ROSETTA_REQUEST_TEMPLATE, ROSETTA_URL
+from .util_methods import print_outgoing, print_incoming
 
 
 def get_address_balance(sc_address):

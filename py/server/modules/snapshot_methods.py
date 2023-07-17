@@ -2,9 +2,9 @@ import datetime
 import re
 import string
 import base58
-from py.server.definitions import MOCK_MC_ADDRESS_MAP, mock_nsc
-from py.server.native_smart_contract.nsc_methods import get_nsc_ownerships
-from py.server.snapshot.proposal import VotingProposal
+from .definitions import MOCK_MC_ADDRESS_MAP, mock_nsc
+from .nsc_methods import get_nsc_ownerships
+from .proposal import VotingProposal
 
 active_proposal = VotingProposal(in_id=None)
 

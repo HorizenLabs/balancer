@@ -1,13 +1,12 @@
 import threading
-import cryptography
 from flask import Flask, request, json
 
-from py.server.rosetta.rosetta_methods import get_chain_tip, get_address_balance
-from py.server.snapshot.snapshot_methods import add_ownership_entry, \
+from modules.snapshot_methods import add_ownership_entry, \
     get_mc_address_map, store_proposal_data, get_active_proposal, \
     proposal_dict
-from definitions import mock_nsc, MOCK_MC_ADDRESS_MAP
-from py.server.utils.util_methods import print_incoming, print_outgoing
+from modules.rosetta_methods import get_chain_tip, get_address_balance
+from modules.definitions import mock_nsc, MOCK_MC_ADDRESS_MAP
+from modules.util_methods import print_incoming, print_outgoing
 
 
 def api_server():
@@ -137,12 +136,14 @@ def api_server():
 
         return json.dumps(ret)
 
-    context = ('local.crt', 'local.key')#certificate and key files
+    # listen on http port
+    # app.run(host="0.0.0.0", port=5000)
+
+    # context = ('local.crt', 'local.key')  # certificate and key files
     app.run(host="0.0.0.0", port=5000, ssl_context='adhoc')
 
 
 if __name__ == '__main__':
-
     # Start http server
     t = threading.Thread(target=api_server, args=())
     t.start()
