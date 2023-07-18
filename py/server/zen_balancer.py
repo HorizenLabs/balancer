@@ -9,8 +9,12 @@ from modules.definitions import mock_nsc, MOCK_MC_ADDRESS_MAP
 from modules.util_methods import print_incoming, print_outgoing
 
 
+from werkzeug.middleware.proxy_fix import ProxyFix
+
 def api_server():
     app = Flask(__name__)
+    # should we use a proxy
+    #app.wsgi_app = ProxyFix(app.wsgi_app)
 
     @app.route('/api/v1/getOwnerships', methods=['POST'])
     def get_ownerships():
@@ -137,10 +141,11 @@ def api_server():
         return json.dumps(ret)
 
     # listen on http port
-    # app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=5000)
 
-    # context = ('local.crt', 'local.key')  # certificate and key files
-    app.run(host="0.0.0.0", port=5000, ssl_context='adhoc')
+    # listen on https port
+    #context = ('/tmp/server.crt', '/tmp/server.key')  # certificate and key files
+    #app.run(host="0.0.0.0", port=5000, ssl_context=context)
 
 
 if __name__ == '__main__':

@@ -13,6 +13,12 @@ ROSETTA_URL = "http://localhost:8080/"
 NETWORK = "test"
 # NETWORK = "main"
 
+# set true if we can not have rosetta for getting balance
+mock_rosetta = True
+
+# set true if we can not interact with a real Native Smart Contract
+mock_nsc = False
+
 ROSETTA_REQUEST_TEMPLATE = {
     "network_identifier": {
         "blockchain": "Zen",
@@ -20,8 +26,6 @@ ROSETTA_REQUEST_TEMPLATE = {
     }
 }
 
-# set true if we can not have rosetta for getting balance
-mock_rosetta = False
 
 MOCK_ROSETTA_GET_BALANCE_RESP = {
     "score": [
@@ -33,8 +37,6 @@ MOCK_ROSETTA_GET_BALANCE_RESP = {
     ]
 }
 
-# set true if we can not interact with a real Native Smart Contract
-mock_nsc = False
 
 # when a Native smart contract is not available this can be helpful
 # see mock_nsc setting

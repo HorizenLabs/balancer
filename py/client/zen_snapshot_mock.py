@@ -4,14 +4,21 @@ import requests
 import sys
 import json
 
+import urllib3
+# squelch warning due to a cert missing an optional field
+urllib3.disable_warnings(urllib3.exceptions.SubjectAltNameWarning)
 
 
-LOCAL_HTTP_SERVER_URL = "http://localhost:5000/"
+#LOCAL_HTTP_SERVER_URL = "http://localhost:5000/"
+LOCAL_HTTP_SERVER_URL = "https://localhost:5000/"
 REMOTE_HTTP_SERVER_URL = "http://zendao-tn-1.de.horizenlabs.io:5000/"
 
 HTTP_SERVER_URL = LOCAL_HTTP_SERVER_URL
 #HTTP_SERVER_URL = REMOTE_HTTP_SERVER_URL
 
+# if the server is on https we should use a cert, otherwise we get a InsecureRequestWarning
+#VERIFY_PARAM ='/tmp/server.crt'
+VERIFY_PARAM=False
 
 CREATE_PROPOSAL_MOCK = {
     "Body": "Start: 18 Apr 23 13:40 UTC, End: 18 Apr 23 13:45 UTC, Author: 0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959",
@@ -43,17 +50,17 @@ def new_proposal():
     CREATE_PROPOSAL_MOCK['ProposalID'] = "proposal/0xeca96e839070fff6f6c5140fcf4939779794feb6028edecc03d5f518133c"+str(val)
     print(f"Calling new proposal with data {CREATE_PROPOSAL_MOCK}")
     post_data = CREATE_PROPOSAL_MOCK
-    response = requests.post(HTTP_SERVER_URL+"api/v1/createProposal", json.dumps(post_data))
+    response = requests.post(HTTP_SERVER_URL+"api/v1/createProposal", json.dumps(post_data), verify=VERIFY_PARAM)
     print(json.dumps(response.json(), indent=4))
 
 def get_voting_power2():
     print(f"Calling get voting power with data {GET_VOTING_POWER_MOCK}")
-    response = requests.post(HTTP_SERVER_URL+"api/v1/getVotingPower", json.dumps(GET_VOTING_POWER_MOCK))
+    response = requests.post(HTTP_SERVER_URL+"api/v1/getVotingPower", json.dumps(GET_VOTING_POWER_MOCK), verify=VERIFY_PARAM)
     print(json.dumps(response.json(), indent=4))
 
 def get_voting_power1():
     print(f"Calling get voting power with data {GET_VOTING_POWER_MOCK}")
-    response = requests.get(HTTP_SERVER_URL+"api/v1/getVotingPower", GET_VOTING_POWER_MOCK)
+    response = requests.get(HTTP_SERVER_URL+"api/v1/getVotingPower", GET_VOTING_POWER_MOCK, verify=VERIFY_PARAM)
     print(json.dumps(response.json(), indent=4))
 
 def get_voting_power(address):
@@ -73,7 +80,7 @@ def get_voting_power(address):
         cmd = GET_VOTING_POWER_MOCK
 
     print(f"Calling get voting power with data {cmd}")
-    response = requests.get(HTTP_SERVER_URL + "api/v1/getVotingPower", cmd)
+    response = requests.get(HTTP_SERVER_URL + "api/v1/getVotingPower", cmd, verify=VERIFY_PARAM)
     print(json.dumps(response.json(), indent=4))
 
 def add_ownership(owner, address):
@@ -85,17 +92,17 @@ def add_ownership(owner, address):
                 'address': address
         }
     print(f"Calling add ownership with data {data}")
-    response = requests.post(HTTP_SERVER_URL + "api/v1/addOwnership", json.dumps(data))
+    response = requests.post(HTTP_SERVER_URL + "api/v1/addOwnership", json.dumps(data), verify=VERIFY_PARAM)
     print(json.dumps(response.json(), indent=4))
 
 def get_proposals():
     print("Calling get proposals")
-    response = requests.post(HTTP_SERVER_URL + "api/v1/getProposals", json.dumps({}))
+    response = requests.post(HTTP_SERVER_URL + "api/v1/getProposals", json.dumps({}), verify=VERIFY_PARAM)
     print(json.dumps(response.json(), indent=4))
 
 def get_ownerships(sc_address=None):
     print("Calling get ownerships")
-    response = requests.post(HTTP_SERVER_URL + "api/v1/getOwnerships", json.dumps({'scAddress' :sc_address}))
+    response = requests.post(HTTP_SERVER_URL + "api/v1/getOwnerships", json.dumps({'scAddress' :sc_address}), verify=VERIFY_PARAM)
     print(json.dumps(response.json(), indent=4))
 
 def main():
