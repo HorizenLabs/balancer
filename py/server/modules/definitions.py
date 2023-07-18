@@ -14,7 +14,7 @@ NETWORK = "test"
 # NETWORK = "main"
 
 # set true if we can not have rosetta for getting balance
-mock_rosetta = True
+mock_rosetta = False
 
 # set true if we can not interact with a real Native Smart Contract
 mock_nsc = False
