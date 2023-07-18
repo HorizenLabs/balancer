@@ -2,8 +2,8 @@ import datetime
 import re
 import string
 import base58
-from .definitions import MOCK_MC_ADDRESS_MAP, mock_nsc
-from .nsc_methods import get_nsc_ownerships
+from .definitions import MOCK_MC_ADDRESS_MAP, mock_nsc, MOCK_OWNER_SC_ADDR_LIST
+from .nsc_methods import get_nsc_ownerships, get_nsc_owner_sc_addresses
 from .proposal import VotingProposal
 
 active_proposal = VotingProposal(in_id=None)
@@ -39,6 +39,7 @@ def store_proposal_data(proposal_json, chain_tip_height, chain_tip_hash):
         to_time=to_time,
         author=author)
 
+    # TODO the active proposal should be stored on a persistent storage for supporting a process restart
     proposal_dict[prop_id] = prop
     active_proposal = prop
 
@@ -109,6 +110,11 @@ def get_mc_address_map(sc_address=None):
     else:
         return get_nsc_ownerships(sc_address)
 
+def get_owner_sc_addr_list():
+    if mock_nsc:
+        return MOCK_OWNER_SC_ADDR_LIST
+    else:
+        return get_nsc_owner_sc_addresses()
 
 def get_active_proposal():
     return active_proposal

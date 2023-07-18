@@ -10,7 +10,7 @@ def get_address_balance(sc_address):
     if get_active_proposal().is_null():
         return {
             "error": {
-                "code": 108,
+                "code": 201,
                 "description": "Reference MC block not defined",
                 "detail": "Reference block should be retrieved from Rosetta when a voting proposal is created"
             }
@@ -24,7 +24,7 @@ def get_address_balance(sc_address):
     except Exception as e:
         return {
             "error": {
-                "code": 108,
+                "code": 202,
                 "description": "Could not get ownership for sc address:" + sc_address,
                 "detail": "An exception occurred: " + str(e)
             }

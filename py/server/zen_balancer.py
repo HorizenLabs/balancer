@@ -3,35 +3,37 @@ from flask import Flask, request, json
 
 from modules.snapshot_methods import add_ownership_entry, \
     get_mc_address_map, store_proposal_data, get_active_proposal, \
-    proposal_dict
+    proposal_dict, get_owner_sc_addr_list
 from modules.rosetta_methods import get_chain_tip, get_address_balance
-from modules.definitions import mock_nsc, MOCK_MC_ADDRESS_MAP
+from modules.definitions import mock_nsc, MOCK_MC_ADDRESS_MAP, MOCK_OWNER_SC_ADDR_LIST
 from modules.util_methods import print_incoming, print_outgoing
 
+# see below for proxy usage
+# from werkzeug.middleware.proxy_fix import ProxyFix
 
-from werkzeug.middleware.proxy_fix import ProxyFix
 
 def api_server():
     app = Flask(__name__)
+
     # should we use a proxy
-    #app.wsgi_app = ProxyFix(app.wsgi_app)
+    # app.wsgi_app = ProxyFix(app.wsgi_app)
 
     @app.route('/api/v1/getOwnerships', methods=['POST'])
     def get_ownerships():
-        proposal = json.loads(request.data)
+        input = json.loads(request.data)
 
-        print_incoming("BalancerApiServer", "/api/v1/getOwnerships", proposal)
+        print_incoming("BalancerApiServer", "/api/v1/getOwnerships", input)
 
         if mock_nsc:
             ret = MOCK_MC_ADDRESS_MAP
         else:
-            sc_address = proposal['scAddress']
+            sc_address = input['scAddress']
             try:
                 ret = get_mc_address_map(sc_address)
             except Exception as e:
                 ret = {
                     "error": {
-                        "code": 108,
+                        "code": 301,
                         "description": "Could not get ownership for sc address:" + sc_address,
                         "detail": "An exception occurred: " + str(e)
                     }
@@ -41,11 +43,35 @@ def api_server():
 
         return json.dumps(ret)
 
+    @app.route('/api/v1/getOwnerScAddresses', methods=['POST'])
+    def get_owner_sc_addresses():
+        input = json.loads(request.data)
+
+        print_incoming("BalancerApiServer", "/api/v1/getOwnerScAddresses", input)
+
+        if mock_nsc:
+            ret = MOCK_OWNER_SC_ADDR_LIST
+        else:
+            try:
+                ret = get_owner_sc_addr_list()
+            except Exception as e:
+                ret = {
+                    "error": {
+                        "code": 302,
+                        "description": "Could not get owner sc addresses",
+                        "detail": "An exception occurred: " + str(e)
+                    }
+                }
+
+        print_outgoing("BalancerApiServer", "/api/v1/getOwnerScAddresses", ret)
+
+        return json.dumps(ret)
+
     @app.route('/api/v1/getProposals', methods=['POST'])
     def get_proposals():
-        proposal = json.loads(request.data)
+        input = json.loads(request.data)
 
-        print_incoming("BalancerApiServer", "/api/v1/getProposals", proposal)
+        print_incoming("BalancerApiServer", "/api/v1/getProposals", input)
         response = [prop.to_json() for prop in proposal_dict.values()]
         print_outgoing("BalancerApiServer", "/api/v1/getProposals", response)
 
@@ -62,7 +88,7 @@ def api_server():
         except Exception as e:
             response = {
                 "error": {
-                    "code": 105,
+                    "code": 303,
                     "description": "Can not create proposal",
                     "detail": "can not determine main chain best block: " + str(e)
                 }
@@ -73,7 +99,7 @@ def api_server():
             except Exception as e:
                 response = {
                     "error": {
-                        "code": 106,
+                        "code": 304,
                         "description": "Can not create proposal",
                         "detail": "proposal data format not expected: " + str(e)
                     }
@@ -94,7 +120,7 @@ def api_server():
         if get_active_proposal().is_null():
             err = {
                 "error": {
-                    "code": 107,
+                    "code": 305,
                     "description": "No proposal have been received at this point",
                     "detail": "Proposal should be received before getting voting power"
                 }
@@ -130,7 +156,7 @@ def api_server():
         else:
             ret = {
                 "error": {
-                    "code": 109,
+                    "code": 306,
                     "description": "Could not add ownership",
                     "detail": "Method not supported with real native smart contract. Pls set \'mock_nsc=true\'"
                               " in balancer"
@@ -141,11 +167,22 @@ def api_server():
         return json.dumps(ret)
 
     # listen on http port
-    app.run(host="0.0.0.0", port=5000)
+    # ---------------------
+    # app.run(host="0.0.0.0", port=5000)
 
     # listen on https port
-    #context = ('/tmp/server.crt', '/tmp/server.key')  # certificate and key files
-    #app.run(host="0.0.0.0", port=5000, ssl_context=context)
+    # ---------------------
+    # localhost (cert generated via openssl, see:
+    # https://kracekumar.com/post/54437887454/ssl-for-flask-local-development/
+    # context = ('/tmp/server.crt', '/tmp/server.key')  # certificate and key files
+
+    # official server (certificates generated there via certbot)
+    # $ export FQDN="zendao-tn-1.de.horizenlabs.io"
+    # $ sudo certbot certonly  -n --agree-tos --register-unsafely-without-email --standalone -d $FQDN
+    context = ('/etc/letsencrypt/archive/zendao-tn-1.de.horizenlabs.io/fullchain1.pem',
+               '/etc/letsencrypt/archive/zendao-tn-1.de.horizenlabs.io/privkey1.pem')
+
+    app.run(host="0.0.0.0", port=5000, ssl_context=context)
 
 
 if __name__ == '__main__':

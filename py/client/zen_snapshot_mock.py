@@ -11,14 +11,15 @@ urllib3.disable_warnings(urllib3.exceptions.SubjectAltNameWarning)
 
 #LOCAL_HTTP_SERVER_URL = "http://localhost:5000/"
 LOCAL_HTTP_SERVER_URL = "https://localhost:5000/"
-REMOTE_HTTP_SERVER_URL = "http://zendao-tn-1.de.horizenlabs.io:5000/"
+REMOTE_HTTP_SERVER_URL = "https://zendao-tn-1.de.horizenlabs.io:5000/"
 
-HTTP_SERVER_URL = LOCAL_HTTP_SERVER_URL
-#HTTP_SERVER_URL = REMOTE_HTTP_SERVER_URL
+#HTTP_SERVER_URL = LOCAL_HTTP_SERVER_URL
+HTTP_SERVER_URL = REMOTE_HTTP_SERVER_URL
 
 # if the server is on https we should use a cert, otherwise we get a InsecureRequestWarning
-#VERIFY_PARAM ='/tmp/server.crt'
-VERIFY_PARAM=False
+#VERIFY_PARAM ='/home/alberto/Downloads/certificate.crt'
+#VERIFY_PARAM=False
+VERIFY_PARAM=True
 
 CREATE_PROPOSAL_MOCK = {
     "Body": "Start: 18 Apr 23 13:40 UTC, End: 18 Apr 23 13:45 UTC, Author: 0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959",
@@ -105,6 +106,11 @@ def get_ownerships(sc_address=None):
     response = requests.post(HTTP_SERVER_URL + "api/v1/getOwnerships", json.dumps({'scAddress' :sc_address}), verify=VERIFY_PARAM)
     print(json.dumps(response.json(), indent=4))
 
+def get_owner_sc_addresses():
+    print("Calling get owner sc addresses")
+    response = requests.post(HTTP_SERVER_URL + "api/v1/getOwnerScAddresses", json.dumps({}), verify=VERIFY_PARAM)
+    print(json.dumps(response.json(), indent=4))
+
 def main():
     args = sys.argv[1:]
 
@@ -134,6 +140,8 @@ def main():
             add_ownership(args[1], args[2])
         else:
             add_ownership(None, None)
+    elif (command == "get_owner_sc_addresses"):
+            get_owner_sc_addresses()
     else:
         print("Unsupported command!")
 
