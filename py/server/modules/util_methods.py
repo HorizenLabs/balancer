@@ -4,7 +4,7 @@ from json import JSONDecodeError
 
 from eth_utils import remove_0x_prefix
 
-from py.server.modules.definitions import PROPOSAL_JSON_DATA_PATH, PROPOSAL_JSON_DATA_FILE_NAME
+from .definitions import PROPOSAL_JSON_DATA_PATH, PROPOSAL_JSON_DATA_FILE_NAME
 
 
 def print_incoming(component_tag, endpoint_tag, content):
