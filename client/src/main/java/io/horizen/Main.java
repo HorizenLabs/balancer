@@ -1,6 +1,7 @@
 package io.horizen;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -114,7 +115,7 @@ public class Main {
                 while ((line = reader.readLine()) != null) {
                     response.append(line);
                 }
-                System.out.println(response.toString());
+                System.out.println(response);
             }
         } else {
             System.out.println("HTTP request failed with response code: " + responseCode);
@@ -148,7 +149,9 @@ public class Main {
                 while ((line = reader.readLine()) != null) {
                     response.append(line);
                 }
-                System.out.println(response.toString());
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                String responseJsonPretty = gson.toJson(gson.fromJson(response.toString(), Object.class));
+                System.out.println(responseJsonPretty);
             }
         } else {
             System.out.println("HTTP request failed with response code: " + responseCode);
@@ -185,7 +188,10 @@ public class Main {
                 while ((line = reader.readLine()) != null) {
                     response.append(line);
                 }
-                System.out.println(response.toString());
+                System.out.println("\naddOwnership response");
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                String responseJsonPretty = gson.toJson(gson.fromJson(response.toString(), Object.class));
+                System.out.println(responseJsonPretty);
             }
         } else {
             System.out.println("HTTP request failed with response code: " + responseCode);
@@ -213,7 +219,9 @@ public class Main {
                 while ((line = reader.readLine()) != null) {
                     response.append(line);
                 }
-                System.out.println(response.toString());
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                String responseJsonPretty = gson.toJson(gson.fromJson(response.toString(), Object.class));
+                System.out.println(responseJsonPretty);
             }
         } else {
             System.out.println("HTTP request failed with response code: " + responseCode);
@@ -244,7 +252,10 @@ public class Main {
                 while ((line = reader.readLine()) != null) {
                     response.append(line);
                 }
-                System.out.println(response.toString());
+
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                String responseJsonPretty = gson.toJson(gson.fromJson(response.toString(), Object.class));
+                System.out.println(responseJsonPretty);
             }
         } else {
             System.out.println("HTTP request failed with response code: " + responseCode);
