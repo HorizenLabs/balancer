@@ -58,3 +58,20 @@ MOCK_OWNER_SC_ADDR_LIST = [
     "0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959",
     "0xf43F35c1A3E36b5Fb554f5E830179cc460c35858"
 ]
+
+import os
+dirname = os.path.dirname(__file__)
+PROPOSAL_JSON_DATA_PATH=dirname+'/../storage/'
+PROPOSAL_JSON_DATA_FILE_NAME = 'active_proposal.json'
+
+
+def check_mocks():
+    if mock_rosetta:
+        print("##################################")
+        print("##    MOCKING ROSETTA MODULE    ##")
+        print("##################################")
+
+    if mock_nsc:
+        print("##################################")
+        print("##    MOCKING ROSETTA MODULE    ##")
+        print("##################################")

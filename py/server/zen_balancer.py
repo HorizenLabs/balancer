@@ -3,10 +3,11 @@ from flask import Flask, request, json
 
 from modules.snapshot_methods import add_ownership_entry, \
     get_mc_address_map, store_proposal_data, get_active_proposal, \
-    proposal_dict, get_owner_sc_addr_list
+    proposal_dict, get_owner_sc_addr_list, init_active_proposal
 from modules.rosetta_methods import get_chain_tip, get_address_balance
-from modules.definitions import mock_nsc, MOCK_MC_ADDRESS_MAP, MOCK_OWNER_SC_ADDR_LIST
-from modules.util_methods import print_incoming, print_outgoing
+from modules.definitions import mock_nsc, MOCK_MC_ADDRESS_MAP, MOCK_OWNER_SC_ADDR_LIST, check_mocks
+from modules.util_methods import print_incoming, print_outgoing, read_proposal_from_file
+
 
 # see below for proxy usage
 # from werkzeug.middleware.proxy_fix import ProxyFix
@@ -107,8 +108,7 @@ def api_server():
             else:
                 response = {"status": "Ok"}
 
-            print_outgoing("BalancerApiServer", "/api/v1/createProposal", response)
-
+        print_outgoing("BalancerApiServer", "/api/v1/createProposal", response)
         return json.dumps(response)
 
     @app.route('/api/v1/getVotingPower', methods=['GET'])
@@ -165,6 +165,14 @@ def api_server():
         print_outgoing("BalancerApiServer", "/api/v1/addOwnership", ret)
 
         return json.dumps(ret)
+
+    # warn if some mock attribute is set
+    check_mocks()
+
+    # read proposal from local file and initialize active proposal if any
+    prop = read_proposal_from_file()
+    if prop is not None:
+        init_active_proposal(prop)
 
     # listen on http port
     # ---------------------

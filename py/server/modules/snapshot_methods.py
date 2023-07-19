@@ -5,8 +5,10 @@ import base58
 from .definitions import MOCK_MC_ADDRESS_MAP, mock_nsc, MOCK_OWNER_SC_ADDR_LIST
 from .nsc_methods import get_nsc_ownerships, get_nsc_owner_sc_addresses
 from .proposal import VotingProposal
+from .util_methods import write_proposal_to_file
 
 active_proposal = VotingProposal(in_id=None)
+
 
 
 def extract_body_attributes(body_string):
@@ -39,10 +41,30 @@ def store_proposal_data(proposal_json, chain_tip_height, chain_tip_hash):
         to_time=to_time,
         author=author)
 
-    # TODO the active proposal should be stored on a persistent storage for supporting a process restart
     proposal_dict[prop_id] = prop
     active_proposal = prop
+    write_proposal_to_file(active_proposal)
 
+def init_active_proposal(deserialized_proposal_dict):
+    global active_proposal
+
+    prop_id = deserialized_proposal_dict['Proposal']['ID']
+    from_time = deserialized_proposal_dict['Proposal']['from']
+    to_time = deserialized_proposal_dict['Proposal']['to']
+    author = deserialized_proposal_dict['Proposal']['Author']
+    chain_tip_height = deserialized_proposal_dict['Proposal']['block_height']
+    chain_tip_hash = deserialized_proposal_dict['Proposal']['block_hash']
+
+    prop = VotingProposal(
+        in_id=prop_id,
+        bl_height=chain_tip_height,
+        bl_hash=chain_tip_hash,
+        from_time=from_time,
+        to_time=to_time,
+        author=author)
+
+    proposal_dict[prop_id] = prop
+    active_proposal = prop
 
 # used only when mocking nsc
 def add_ownership_entry(data_json):

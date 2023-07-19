@@ -16,9 +16,14 @@ REMOTE_HTTP_SERVER_URL = "https://zendao-tn-1.de.horizenlabs.io:5000/"
 #HTTP_SERVER_URL = LOCAL_HTTP_SERVER_URL
 HTTP_SERVER_URL = REMOTE_HTTP_SERVER_URL
 
-# if the server is on https we should use a cert, otherwise we get a InsecureRequestWarning
-#VERIFY_PARAM ='/home/alberto/Downloads/certificate.crt'
+# if the server is on https we should use a cert
+#---
+# for local dev and self-signed cert we use the same cert as server
+#VERIFY_PARAM ='/tmp/server.crt'
+# if https we get a InsecureRequestWarning
 #VERIFY_PARAM=False
+#---
+# valid cert
 VERIFY_PARAM=True
 
 CREATE_PROPOSAL_MOCK = {
