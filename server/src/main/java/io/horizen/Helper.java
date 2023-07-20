@@ -1,5 +1,7 @@
 package io.horizen;
 
+import com.google.gson.JsonObject;
+
 import java.io.DataOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -25,6 +27,18 @@ public class Helper {
         outputStream.close();
 
         return connection;
+    }
+
+    public static JsonObject buildErrorJsonObject(int code, String description, String detail) {
+        JsonObject errorObject = new JsonObject();
+        errorObject.addProperty("code", code);
+        errorObject.addProperty("description", description);
+        errorObject.addProperty("detail", detail);
+
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.add("error", errorObject);
+
+        return jsonObject;
     }
 
     public static HttpURLConnection sendRequestWithAuth(String url, String data, String username, String password) throws Exception {

@@ -28,7 +28,7 @@ public class Balancer {
     }
 
     private String addOwnership(Request req, Response res) {
-
+        //todo should check what happenes if address and owner not set
         String address = req.queryParams("address");
         String owner = req.queryParams("owner");
 
@@ -36,7 +36,11 @@ public class Balancer {
             SnapshotMethods.addOwnershipEntry(address, owner);
         }
         else {
-            //todo error codes
+            int code = 109;
+            String description = "Could not add ownership";
+            String detail = "Method not supported with real native smart contract. Pls set mock_nsc=true in balancer"; //todo java spark automatically adds escaping
+            Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+            return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
         }
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
@@ -45,10 +49,15 @@ public class Balancer {
 
     private String getVotingPower(Request req, Response res) throws Exception {
 
-        String address = req.queryParams("address");
+        String address = req.queryParams("addresses");
 
-        if (SnapshotMethods.getActiveProposal() == null)
-            throw new RuntimeException(); //todo throw error codes and stuff
+        if (SnapshotMethods.getActiveProposal() == null) {
+            int code = 107;
+            String description = "No proposal have been received at this point";
+            String detail = "Proposal should be received before getting voting power";
+            Gson gson = new Gson();
+            return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+        }
 
         double balance = RosettaMethods.getAddressBalance(address);
 

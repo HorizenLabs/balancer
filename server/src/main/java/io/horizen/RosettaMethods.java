@@ -78,20 +78,6 @@ public class RosettaMethods {
 
             if (Constants.MOCK_ROSETTA) {
                 System.out.println("MOCK ROSETTA RESPONSE");
-                // Create the Java object representing the JSON structure
-                JsonObject jsonObject = new JsonObject();
-                JsonArray scoreArray = new JsonArray();
-                JsonObject scoreObject = new JsonObject();
-                scoreObject.addProperty("address", "0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959");
-                scoreObject.addProperty("score", 123456789);
-                scoreObject.addProperty("decimal", 8);
-                scoreArray.add(scoreObject);
-                jsonObject.add("score", scoreArray);
-
-                // Create Gson instance
-                Gson gson = new Gson();
-
-                // Convert the Java object to JSON string
                 return 123456789.0;
             }
 

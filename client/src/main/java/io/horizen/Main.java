@@ -3,10 +3,7 @@ package io.horizen;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
@@ -39,6 +36,20 @@ public class Main {
 
         ADD_OWNERSHIP_MOCK.put("owner", "0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959");
         ADD_OWNERSHIP_MOCK.put("address", "ztWBHD2Eo6uRLN6xAYxj8mhmSPbUYrvMPwt");
+    }
+
+    // Helper method to convert a map to a query string
+    private static String getQueryString(Map<String, Object> params) throws UnsupportedEncodingException {
+        StringBuilder result = new StringBuilder();
+        String[] addressArray = (String[]) params.get("addresses");
+        Map<String,String> optionsMap = (Map<String,String>) params.get("options");
+        result.append("network").append("=").append(params.get("network")).append("&");
+        result.append("snapshot").append("=").append(params.get("snapshot")).append("&");
+        result.append("addresses").append("=").append(addressArray[0]).append("&");
+        result.append("options").append("=").append(optionsMap.get("type")).append("&");
+        result.append("options").append("=").append(optionsMap.get("url"));
+
+        return result.toString();
     }
 
     private static void newProposal() throws IOException {
@@ -126,7 +137,7 @@ public class Main {
         Map<String, Object> cmd;
         if (address != null) {
             cmd = new HashMap<>();
-            cmd.put("options", Map.of("url", HTTP_SERVER_URL + "/api/v1/getVotingPower", "type", "api-post"));
+            cmd.put("options", Map.of("url", HTTP_SERVER_URL + "api/v1/getVotingPower", "type", "api-post"));
             cmd.put("network", "80001");
             cmd.put("snapshot", 34522768);
             cmd.put("addresses", new String[]{address});
@@ -136,10 +147,13 @@ public class Main {
 
         System.out.println("Calling get voting power with data: " + cmd);
 
-        URL url = new URL(HTTP_SERVER_URL + "api/v1/getVotingPower");
+        String queryString = getQueryString(cmd);
+        String baseUrl = HTTP_SERVER_URL + "api/v1/getVotingPower";
+        String fullUrl = baseUrl + "?" + queryString;
+
+        URL url = new URL(fullUrl);
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
-        connection.setRequestProperty("Content-Type", "application/json");
 
         int responseCode = connection.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_OK) {

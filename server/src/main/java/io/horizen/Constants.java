@@ -24,7 +24,7 @@ public final class Constants {
     public static final Boolean MOCK_ROSETTA = true;
 
     // set true if we can not interact with a real Native Smart Contract
-    public static final Boolean MOCK_NSC = false;
+    public static final Boolean MOCK_NSC = true;
 
 
     // when a Native smart contract is not available this can be helpful
