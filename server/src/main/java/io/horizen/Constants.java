@@ -41,4 +41,13 @@ public final class Constants {
         MOCK_MC_ADDRESS_MAP.put("0xf43F35c1A3E36b5Fb554f5E830179cc460c35858",
                 new ArrayList<>(List.of("ztYztK6dH2HiK1mTL1byWGY5hx1TaGNPuen")));
     }
+
+    // Get the current working directory
+    public static String currentDirectory = System.getProperty("user.dir");
+
+    // Construct the path to the storage directory relative to the current working directory
+    public static String proposalJsonDataPath = currentDirectory + "/server/src/main/resources/";
+
+    // Construct the full path to the active_proposal.json file
+    public static String proposalJsonDataFileName = "active_proposal.json";
 }

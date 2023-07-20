@@ -18,6 +18,7 @@ public class SnapshotMethods {
 
         activeProposal = votingProposal;
         proposals.put(votingProposal.getId(), votingProposal);
+        Helper.writeProposalToFile(votingProposal);
     }
 
     public static Collection<VotingProposal> getProposals() {
@@ -57,5 +58,11 @@ public class SnapshotMethods {
                 }
             }
         }
+    }
+
+    public static void initActiveProposal() {
+        VotingProposal votingProposal = Helper.readProposalFromFile();
+        activeProposal = votingProposal;
+        proposals.put(votingProposal.getId(), votingProposal);
     }
 }

@@ -2,10 +2,13 @@ package io.horizen;
 
 import com.google.gson.JsonObject;
 
-import java.io.DataOutputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Base64;
 
 public class Helper {
@@ -64,5 +67,39 @@ public class Helper {
         outputStream.close();
 
         return connection;
+    }
+
+    public static void writeProposalToFile(VotingProposal votingProposal) {
+        String fileName = Constants.proposalJsonDataPath + Constants.proposalJsonDataFileName;
+        String jsonProposal = votingProposal.toJson();
+
+        try {
+            // Create directories if they don't exist
+            Path path = Paths.get(fileName);
+            Files.createDirectories(path.getParent());
+
+            // Write the JSON data to the file
+            try (FileWriter fileWriter = new FileWriter(fileName)) {
+                fileWriter.write(jsonProposal);
+            }
+        } catch (IOException e) {
+            System.err.println("Error writing the JSON data to the file: " + e.getMessage());
+        }
+    }
+
+    public static VotingProposal readProposalFromFile() {
+        String fileName = Constants.proposalJsonDataPath + Constants.proposalJsonDataFileName;
+
+        StringBuilder jsonData = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                jsonData.append(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return MyGsonManager.getGson().fromJson(jsonData.toString(), VotingProposal.class);
     }
 }
