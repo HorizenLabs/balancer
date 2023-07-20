@@ -20,6 +20,7 @@ public class Main {
     private static final Map<String, Object> CREATE_PROPOSAL_MOCK = new HashMap<>();
     private static final Map<String, Object> GET_VOTING_POWER_MOCK = new HashMap<>();
     private static final Map<String, Object> ADD_OWNERSHIP_MOCK = new HashMap<>();
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     static {
         CREATE_PROPOSAL_MOCK.put("Body", "Start: 18 Apr 23 13:40 UTC, End: 18 Apr 23 13:45 UTC, " +
@@ -39,7 +40,7 @@ public class Main {
     }
 
     // Helper method to convert a map to a query string
-    private static String getQueryString(Map<String, Object> params) throws UnsupportedEncodingException {
+    private static String getQueryString(Map<String, Object> params) {
         StringBuilder result = new StringBuilder();
         String[] addressArray = (String[]) params.get("addresses");
         Map<String,String> optionsMap = (Map<String,String>) params.get("options");
@@ -65,7 +66,7 @@ public class Main {
         connection.setDoOutput(true);
 
         try (OutputStream outputStream = connection.getOutputStream()) {
-            outputStream.write(new Gson().toJson(CREATE_PROPOSAL_MOCK).getBytes());
+            outputStream.write(gson.toJson(CREATE_PROPOSAL_MOCK).getBytes());
         }
 
         int responseCode = connection.getResponseCode();
@@ -76,7 +77,7 @@ public class Main {
                 while ((line = reader.readLine()) != null) {
                     response.append(line);
                 }
-                System.out.println(response.toString());
+                System.out.println(response);
             }
         } else {
             System.out.println("HTTP request failed with response code: " + responseCode);
@@ -93,7 +94,7 @@ public class Main {
         connection.setDoOutput(true);
 
         try (OutputStream outputStream = connection.getOutputStream()) {
-            outputStream.write(new Gson().toJson(GET_VOTING_POWER_MOCK).getBytes());
+            outputStream.write(gson.toJson(GET_VOTING_POWER_MOCK).getBytes());
         }
 
         int responseCode = connection.getResponseCode();
@@ -104,7 +105,7 @@ public class Main {
                 while ((line = reader.readLine()) != null) {
                     response.append(line);
                 }
-                System.out.println(response.toString());
+                System.out.println(response);
             }
         } else {
             System.out.println("HTTP request failed with response code: " + responseCode);
@@ -163,7 +164,6 @@ public class Main {
                 while ((line = reader.readLine()) != null) {
                     response.append(line);
                 }
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 String responseJsonPretty = gson.toJson(gson.fromJson(response.toString(), Object.class));
                 System.out.println(responseJsonPretty);
             }
@@ -191,7 +191,7 @@ public class Main {
         connection.setDoOutput(true);
 
         try (OutputStream outputStream = connection.getOutputStream()) {
-            outputStream.write(new Gson().toJson(data).getBytes());
+            outputStream.write(gson.toJson(data).getBytes());
         }
 
         int responseCode = connection.getResponseCode();
@@ -203,7 +203,6 @@ public class Main {
                     response.append(line);
                 }
                 System.out.println("\naddOwnership response");
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 String responseJsonPretty = gson.toJson(gson.fromJson(response.toString(), Object.class));
                 System.out.println(responseJsonPretty);
             }
@@ -233,7 +232,6 @@ public class Main {
                 while ((line = reader.readLine()) != null) {
                     response.append(line);
                 }
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 String responseJsonPretty = gson.toJson(gson.fromJson(response.toString(), Object.class));
                 System.out.println(responseJsonPretty);
             }
@@ -255,7 +253,7 @@ public class Main {
         connection.setDoOutput(true);
 
         try (OutputStream outputStream = connection.getOutputStream()) {
-            outputStream.write(new Gson().toJson(requestData).getBytes());
+            outputStream.write(gson.toJson(requestData).getBytes());
         }
 
         int responseCode = connection.getResponseCode();
@@ -267,7 +265,6 @@ public class Main {
                     response.append(line);
                 }
 
-                Gson gson = new GsonBuilder().setPrettyPrinting().create();
                 String responseJsonPretty = gson.toJson(gson.fromJson(response.toString(), Object.class));
                 System.out.println(responseJsonPretty);
             }

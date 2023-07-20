@@ -1,7 +1,6 @@
 package io.horizen;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 import java.util.Date;
 
@@ -47,7 +46,7 @@ public class VotingProposal {
     }
 
     public String toJson() {
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        Gson gson = MyGsonManager.getGson();
         return gson.toJson(this);
     }
 

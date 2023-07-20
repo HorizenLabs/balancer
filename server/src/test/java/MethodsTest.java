@@ -15,7 +15,7 @@ public class MethodsTest {
 
 
     @Test
-    public void addOwnershipEntry() {
+    public void addOwnershipEntry() throws Exception{
         String address = "ztWBHD2Eo6uRLN6xAYxj8mhmSPbUYrvMPwt";
         String owner = "0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959";
         SnapshotMethods.addOwnershipEntry(address, owner);

@@ -47,7 +47,10 @@ public class NscMethods {
         String requestBody = buildNscRequestBody(abiString);
         HttpURLConnection connection = Helper.sendRequestWithAuth(Constants.NSC_URL + "ethv1", requestBody, "user", "Horizen");
 
-        //
+        if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+            throw new Exception();
+        }
+
         // Read the response body
         BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
         StringBuilder response = new StringBuilder();
@@ -58,10 +61,7 @@ public class NscMethods {
         reader.close();
 
         // Print the response body
-        System.out.println("Response Body: " + response.toString());
-        //
-
-        //todo continue if response message "OK"
+        System.out.println("Response Body: " + response);
 
         // Parse the JSON response
         JsonObject responseObject = JsonParser.parseString(response.toString()).getAsJsonObject();
@@ -74,9 +74,7 @@ public class NscMethods {
             abiReturnValue = abiReturnValue.substring(2);
         }
 
-        Map<String, List<String>> scAssociations = getKeyOwnershipFromAbi(abiReturnValue);
-
-        return scAssociations;
+        return getKeyOwnershipFromAbi(abiReturnValue);
     }
 
     public static Map<String, List<String>> getKeyOwnershipFromAbi(String abiReturnValue) {
@@ -149,7 +147,7 @@ public class NscMethods {
         requestBody.addProperty("id", 1);
 
         // Create Gson instance
-        Gson gson = new Gson();
+        Gson gson = MyGsonManager.getGson();
 
         // Convert the Java object to JSON string
         return gson.toJson(requestBody);

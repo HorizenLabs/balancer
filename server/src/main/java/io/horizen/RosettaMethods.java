@@ -35,7 +35,7 @@ public class RosettaMethods {
             // Handle the response
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 System.out.println("POST request successful");
-                System.out.println("Response: " + response.toString());
+                System.out.println("Response: " + response);
 
                 // Parse the JSON response
                 JsonObject responseObject = JsonParser.parseString(response.toString()).getAsJsonObject();
@@ -50,24 +50,16 @@ public class RosettaMethods {
                         .get("hash")
                         .getAsString();
 
-                System.out.println("chain_height: " + chainHeight);
-                System.out.println("best_block_hash: " + bestBlockHash);
-
                 return new ChainTip(chainHeight, bestBlockHash);
-            } else {
-                System.err.println("POST request failed. Response Code: " + responseCode);
-                return null;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
+            } else
+                throw new Exception(connection.getResponseCode() + " " + connection.getResponseMessage());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            throw ex;
         }
     }
 
     public static Double getAddressBalance(String scAddress) throws Exception {
-
-        if (SnapshotMethods.getActiveProposal() == null)
-            throw new RuntimeException(); //todo throw error codes and stuff
 
         double balance = 0;
 
@@ -85,18 +77,22 @@ public class RosettaMethods {
                 String body = buildRosettaRequestBody(mcAddress);
                 HttpURLConnection connection = Helper.sendRequest(Constants.ROSETTA_URL + "account/balance", body);
 
-                // Parse the JSON response
-                JsonElement jsonElement = JsonParser.parseString(connection.getResponseMessage());
+                if(connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    // Parse the JSON response
+                    JsonElement jsonElement = JsonParser.parseString(connection.getResponseMessage());
 
-                // Retrieve the value from the parsed JSON
-                int amount = jsonElement
-                        .getAsJsonObject()
-                        .getAsJsonArray("balances")
-                        .get(0)
-                        .getAsJsonObject()
-                        .get("value")
-                        .getAsInt();
-                balance += amount;
+                    // Retrieve the value from the parsed JSON
+                    int amount = jsonElement
+                            .getAsJsonObject()
+                            .getAsJsonArray("balances")
+                            .get(0)
+                            .getAsJsonObject()
+                            .get("value")
+                            .getAsInt();
+                    balance += amount;
+                }
+                else
+                    throw new Exception();
             }
         }
 
@@ -126,10 +122,10 @@ public class RosettaMethods {
 
         // Print the outgoing request
         System.out.println("Outgoing Request:");
-        System.out.println(requestBody.toString());
+        System.out.println(requestBody);
 
         // Create Gson instance
-        Gson gson = new Gson();
+        Gson gson = MyGsonManager.getGson();
 
         // Convert the Java object to JSON string
         return gson.toJson(requestBody);

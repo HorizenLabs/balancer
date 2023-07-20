@@ -13,7 +13,9 @@ public class SnapshotMethods {
     private static final Map<String, VotingProposal> proposals = new HashMap<>();
 
     public static void storeProposalData(VotingProposal votingProposal) {
-        //todo check if proposal with same id exists
+        if (proposals.containsKey(votingProposal.getId()))
+            return;
+
         activeProposal = votingProposal;
         proposals.put(votingProposal.getId(), votingProposal);
     }
@@ -33,22 +35,22 @@ public class SnapshotMethods {
             return NscMethods.getNscOwnerships(scAddress);
     }
 
-    public static void addOwnershipEntry(String address, String owner) {
+    public static void addOwnershipEntry(String address, String owner) throws Exception {
         try {
             Base58.decodeChecked(address);
         }
         catch (Exception ex) {
-            throw new RuntimeException(ex);
+            throw ex;
         }
 
         if (owner.length() != 42  || !owner.substring(2).matches("[0-9A-Fa-f]+")) {
-            throw new RuntimeException();
+            throw new Exception();
         }
         else {
             if (Constants.MOCK_MC_ADDRESS_MAP.containsKey(owner)) {
                 List<String> addresses = Constants.MOCK_MC_ADDRESS_MAP.get(owner);
                 if (addresses.contains(address)) {
-                    throw new RuntimeException();
+                    throw new Exception();
                 }
                 else {
                     addresses.add(address);
