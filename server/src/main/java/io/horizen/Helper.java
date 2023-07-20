@@ -70,16 +70,16 @@ public class Helper {
     }
 
     public static void writeProposalToFile(VotingProposal votingProposal) {
-        String fileName = Constants.proposalJsonDataPath + Constants.proposalJsonDataFileName;
+        String filePath = Constants.proposalJsonDataPath + Constants.proposalJsonDataFileName;
         String jsonProposal = votingProposal.toJson();
 
         try {
             // Create directories if they don't exist
-            Path path = Paths.get(fileName);
+            Path path = Paths.get(filePath);
             Files.createDirectories(path.getParent());
 
             // Write the JSON data to the file
-            try (FileWriter fileWriter = new FileWriter(fileName)) {
+            try (FileWriter fileWriter = new FileWriter(filePath)) {
                 fileWriter.write(jsonProposal);
             }
         } catch (IOException e) {
@@ -88,10 +88,17 @@ public class Helper {
     }
 
     public static VotingProposal readProposalFromFile() {
-        String fileName = Constants.proposalJsonDataPath + Constants.proposalJsonDataFileName;
+        String filePath = Constants.proposalJsonDataPath + Constants.proposalJsonDataFileName;
+
+        // Check if the file exists before reading
+        File file = new File(filePath);
+        if (!file.exists()) {
+            System.out.println("File does not exist.");
+            return null;
+        }
 
         StringBuilder jsonData = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new FileReader(fileName))) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 jsonData.append(line);

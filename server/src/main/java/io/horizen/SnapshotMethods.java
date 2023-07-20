@@ -62,7 +62,9 @@ public class SnapshotMethods {
 
     public static void initActiveProposal() {
         VotingProposal votingProposal = Helper.readProposalFromFile();
-        activeProposal = votingProposal;
-        proposals.put(votingProposal.getId(), votingProposal);
+        if (votingProposal != null) {
+            activeProposal = votingProposal;
+            proposals.put(votingProposal.getId(), votingProposal);
+        }
     }
 }
