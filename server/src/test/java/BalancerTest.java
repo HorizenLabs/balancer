@@ -16,7 +16,7 @@ import static org.junit.Assert.assertEquals;
 public class BalancerTest {
 
     @BeforeClass
-    public static void setUp() {
+    public static void setUp() throws Exception {
         // Set up Spark before running the tests
         Main.main(null); // Start your Spark application
         Spark.awaitInitialization(); // Wait until Spark is ready

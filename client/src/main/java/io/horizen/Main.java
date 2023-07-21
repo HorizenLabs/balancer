@@ -3,15 +3,19 @@ package io.horizen;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
+import javax.net.ssl.*;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
 public class Main {
-    private static final String LOCAL_HTTP_SERVER_URL = "http://localhost:8080/";
+    private static final String LOCAL_HTTP_SERVER_URL = "https://localhost:8080/";
     private static final String REMOTE_HTTP_SERVER_URL = "http://zendao-tn-1.de.horizenlabs.io:5000/";
 
     private static final String HTTP_SERVER_URL = LOCAL_HTTP_SERVER_URL;
@@ -21,6 +25,8 @@ public class Main {
     private static final Map<String, Object> GET_VOTING_POWER_MOCK = new HashMap<>();
     private static final Map<String, Object> ADD_OWNERSHIP_MOCK = new HashMap<>();
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    private static SSLSocketFactory sslSocketFactory = null;
 
     static {
         CREATE_PROPOSAL_MOCK.put("Body", "Start: 18 Apr 23 13:40 UTC, End: 18 Apr 23 13:45 UTC, " +
@@ -60,7 +66,7 @@ public class Main {
         System.out.println("Calling new proposal with data: " + CREATE_PROPOSAL_MOCK);
 
         URL url = new URL(HTTP_SERVER_URL + "api/v1/createProposal");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
@@ -153,7 +159,7 @@ public class Main {
         String fullUrl = baseUrl + "?" + queryString;
 
         URL url = new URL(fullUrl);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
 
         int responseCode = connection.getResponseCode();
@@ -185,7 +191,7 @@ public class Main {
         System.out.println("Calling add ownership with data: " + data);
 
         URL url = new URL(HTTP_SERVER_URL + "api/v1/addOwnership");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
@@ -215,10 +221,11 @@ public class Main {
         System.out.println("Calling get proposals");
 
         URL url = new URL(HTTP_SERVER_URL + "api/v1/getProposals");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
+//        connection.setSSLSocketFactory(sslSocketFactory);
 
         try (OutputStream outputStream = connection.getOutputStream()) {
             outputStream.write("{}".getBytes());
@@ -247,7 +254,7 @@ public class Main {
         requestData.put("scAddress", scAddress);
 
         URL url = new URL(HTTP_SERVER_URL + "api/v1/getOwnerships");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
@@ -273,17 +280,195 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    private static void helloWorld() throws IOException {
+        System.out.println("Calling hello world");
+
+        URL url = new URL(HTTP_SERVER_URL + "hello");
+        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+        connection.setRequestProperty("Content-Type", "application/json");
+        //connection.setDoOutput(true);
+//        connection.setSSLSocketFactory(sslSocketFactory);
+
+//        try (OutputStream outputStream = connection.getOutputStream()) {
+//            outputStream.write("{}".getBytes());
+//        }
+
+        int responseCode = connection.getResponseCode();
+        System.out.println(responseCode);
+//        if (responseCode == HttpURLConnection.HTTP_OK) {
+//            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+//                StringBuilder response = new StringBuilder();
+//                String line;
+//                while ((line = reader.readLine()) != null) {
+//                    response.append(line);
+//                }
+//                String responseJsonPretty = gson.toJson(gson.fromJson(response.toString(), Object.class));
+//                System.out.println(responseJsonPretty);
+//            }
+//        } else {
+//            System.out.println("HTTP request failed with response code: " + responseCode);
+//        }
+    }
+
+    public static void main(String[] args) throws Exception {
         if (args.length == 0) {
             System.out.println("Command not specified!");
             return;
         }
+
+//        System.setProperty("javax.net.ssl.trustStore", "client/src/main/resources/client-truststore.jks");
+//        System.setProperty("javax.net.ssl.trustStorePassword", "changeit"); // Change this to your truststore password
+//
+//        //String keystorePath = "/home/david/Desktop/balancer git ssh/balancer/server/src/main/resources/keystore.jks";
+//        String keystorePath = "client/src/main/resources/keystore.jks";
+//        String keystorePassword = "changeit";
+//
+//        String truststorePath = "client/src/main/resources/client-truststore.jks";
+//        String truststorePassword = "changeit";
+//
+//        System.setProperty("javax.net.ssl.trustStore", "client/src/main/resources/client-truststore.jks");
+//        System.setProperty("javax.net.ssl.trustStorePassword", "changeit"); // Change this to your truststore password
+//
+//
+//        try {
+//            KeyStore keystore = KeyStore.getInstance("JKS");
+//            keystore.load(new FileInputStream(keystorePath), keystorePassword.toCharArray());
+//
+//            KeyStore truststore = KeyStore.getInstance("JKS");
+//            truststore.load(new FileInputStream(truststorePath), truststorePassword.toCharArray());
+//
+//
+//            // Create an SSL context and initialize it with the keystore and truststore
+//            SSLContext sslContext = SSLContext.getInstance("TLS");
+//            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+//            keyManagerFactory.init(keystore, keystorePassword.toCharArray());
+//            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+//            trustManagerFactory.init(truststore);
+//            sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
+//
+//            // Set the SSLContext as the default context for HttpsURLConnection
+//            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+
+
+
+
+
+
+//        // Load the keystore with the client certificate
+//        String keystorePath = "client/src/main/resources/keystore.jks";
+//        String keystorePassword = "changeit";
+//        System.setProperty("javax.net.ssl.keyStore", keystorePath);
+//        System.setProperty("javax.net.ssl.keyStorePassword", keystorePassword);
+//
+//
+//        // create a custom trustmanager
+//        TrustManager[] trustAllCertificates = new TrustManager[]{
+//                new X509TrustManager() {
+//                    public X509Certificate[] getAcceptedIssuers() {
+//                        return null;
+//                    }
+//
+//                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
+//                    }
+//
+//                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
+//                    }
+//                }
+//        };
+//
+//        // Create and set up the SSLContext
+//        SSLContext sslContext;
+//        try {
+//            sslContext = SSLContext.getInstance("TLS");
+//            sslContext.init(null, trustAllCertificates, new java.security.SecureRandom());
+//            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+//            HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return;
+//        }
+
+//        sslSocketFactory = sslContext.getSocketFactory();
+//
+//        HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+
+
+
+
+
+
+
+
+        //treci nacin
+//        KeyStore clientKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
+//        clientKeyStore.load(new FileInputStream("client/src/main/resources/client.crt"), "changeit".toCharArray());
+//
+//        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+//        kmf.init(clientKeyStore, "changeit".toCharArray());
+//
+//        SSLContext sslContext = SSLContext.getInstance("TLS");
+//        sslContext.init(kmf.getKeyManagers(), null, null);
+
+
+        //cetvrti
+        // Load the keystore with the client certificate
+        String keystorePath = "/home/david/Desktop/balancer git ssh/balancer/client/src/main/resources/keystore.p12";
+        String keystorePassword = "mypassword";
+        System.setProperty("javax.net.ssl.keyStore", keystorePath);
+        System.setProperty("javax.net.ssl.keyStorePassword", keystorePassword);
+
+
+        // create a custom trustmanager
+        TrustManager[] trustAllCertificates = new TrustManager[]{
+                new X509TrustManager() {
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+
+                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                    }
+
+                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                    }
+                }
+        };
+
+        KeyStore keystore = KeyStore.getInstance("PKCS12");
+        keystore.load(new FileInputStream(keystorePath), keystorePassword.toCharArray());
+
+        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        keyManagerFactory.init(keystore, keystorePassword.toCharArray());
+
+        // Create and set up the SSLContext
+        SSLContext sslContext;
+        try {
+            sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(keyManagerFactory.getKeyManagers(), trustAllCertificates, new java.security.SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+            HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        sslSocketFactory = sslContext.getSocketFactory();
+
+        HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+
+
 
         // Command to execute
         String command = args[0];
         switch (command) {
             case "new_proposal":
                 newProposal();
+                break;
+            case "hello":
+                helloWorld();
                 break;
             case "get_voting_power":
                 if (args.length > 1) {
