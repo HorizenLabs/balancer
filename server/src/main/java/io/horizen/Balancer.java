@@ -210,8 +210,7 @@ public class Balancer {
                 scAddress = jsonObject.get("scAddress").getAsString();
             }
             catch (Exception ex) {
-                System.out.println("scAddress does not exist");
-                throw new RuntimeException("scAddress does not exist"); //todo fix
+                scAddress = null;
             }
             try {
                 ret = SnapshotMethods.getMcAddressMap(scAddress);
