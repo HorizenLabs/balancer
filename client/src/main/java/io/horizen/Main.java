@@ -5,7 +5,6 @@ import com.google.gson.GsonBuilder;
 
 import javax.net.ssl.*;
 import java.io.*;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
@@ -24,8 +23,6 @@ public class Main {
     private static final Map<String, Object> GET_VOTING_POWER_MOCK = new HashMap<>();
     private static final Map<String, Object> ADD_OWNERSHIP_MOCK = new HashMap<>();
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-
-    private static SSLSocketFactory sslSocketFactory = null;
 
     static {
         CREATE_PROPOSAL_MOCK.put("Body", "Start: 18 Apr 23 13:40 UTC, End: 18 Apr 23 13:45 UTC, " +
@@ -75,7 +72,7 @@ public class Main {
         }
 
         int responseCode = connection.getResponseCode();
-        if (responseCode == HttpURLConnection.HTTP_OK) {
+        if (responseCode == HttpsURLConnection.HTTP_OK) {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                 StringBuilder response = new StringBuilder();
                 String line;
@@ -93,7 +90,7 @@ public class Main {
         System.out.println("Calling get voting power with data: " + GET_VOTING_POWER_MOCK);
 
         URL url = new URL(HTTP_SERVER_URL + "api/v1/getVotingPower");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
@@ -103,7 +100,7 @@ public class Main {
         }
 
         int responseCode = connection.getResponseCode();
-        if (responseCode == HttpURLConnection.HTTP_OK) {
+        if (responseCode == HttpsURLConnection.HTTP_OK) {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                 StringBuilder response = new StringBuilder();
                 String line;
@@ -120,12 +117,12 @@ public class Main {
         System.out.println("Calling get voting power with data: " + GET_VOTING_POWER_MOCK);
 
         URL url = new URL(HTTP_SERVER_URL + "api/v1/getVotingPower");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Content-Type", "application/json");
 
         int responseCode = connection.getResponseCode();
-        if (responseCode == HttpURLConnection.HTTP_OK) {
+        if (responseCode == HttpsURLConnection.HTTP_OK) {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                 StringBuilder response = new StringBuilder();
                 String line;
@@ -162,7 +159,7 @@ public class Main {
         connection.setRequestMethod("GET");
 
         int responseCode = connection.getResponseCode();
-        if (responseCode == HttpURLConnection.HTTP_OK) {
+        if (responseCode == HttpsURLConnection.HTTP_OK) {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                 StringBuilder response = new StringBuilder();
                 String line;
@@ -200,7 +197,7 @@ public class Main {
         }
 
         int responseCode = connection.getResponseCode();
-        if (responseCode == HttpURLConnection.HTTP_OK) {
+        if (responseCode == HttpsURLConnection.HTTP_OK) {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                 StringBuilder response = new StringBuilder();
                 String line;
@@ -230,7 +227,7 @@ public class Main {
         }
 
         int responseCode = connection.getResponseCode();
-        if (responseCode == HttpURLConnection.HTTP_OK) {
+        if (responseCode == HttpsURLConnection.HTTP_OK) {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                 StringBuilder response = new StringBuilder();
                 String line;
@@ -262,7 +259,7 @@ public class Main {
         }
 
         int responseCode = connection.getResponseCode();
-        if (responseCode == HttpURLConnection.HTTP_OK) {
+        if (responseCode == HttpsURLConnection.HTTP_OK) {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                 StringBuilder response = new StringBuilder();
                 String line;
@@ -288,7 +285,7 @@ public class Main {
 
         int responseCode = connection.getResponseCode();
         System.out.println(responseCode);
-        if (responseCode == HttpURLConnection.HTTP_OK) {
+        if (responseCode == HttpsURLConnection.HTTP_OK) {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                 StringBuilder response = new StringBuilder();
                 String line;
@@ -303,50 +300,12 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
+        setupSSL();
+
         if (args.length == 0) {
             System.out.println("Command not specified!");
             return;
         }
-
-        // Load the keystore with the client certificate
-        String keystorePath = "keystore/keystore.p12";
-        String keystorePassword = "mypassword";
-
-        // create a custom trustmanager
-        TrustManager[] trustAllCertificates = new TrustManager[]{
-                new X509TrustManager() {
-                    public X509Certificate[] getAcceptedIssuers() {
-                        return null;
-                    }
-
-                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
-                    }
-
-                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
-                    }
-                }
-        };
-
-        KeyStore keystore = KeyStore.getInstance("PKCS12");
-        keystore.load(new FileInputStream(keystorePath), keystorePassword.toCharArray());
-
-        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        keyManagerFactory.init(keystore, keystorePassword.toCharArray());
-
-        // Create and set up the SSLContext
-        SSLContext sslContext;
-        try {
-            sslContext = SSLContext.getInstance("TLS");
-            sslContext.init(keyManagerFactory.getKeyManagers(), trustAllCertificates, new java.security.SecureRandom());
-            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
-            HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return;
-        }
-
-        sslSocketFactory = sslContext.getSocketFactory();
-        HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
 
         // Command to execute
         String command = args[0];
@@ -384,6 +343,40 @@ public class Main {
             default:
                 System.out.println("Unsupported command!");
                 break;
+        }
+    }
+
+    private static void setupSSL() throws Exception {
+        // Load the keystore with the certificate
+        String keystorePath = "keystore/keystore.p12";
+        String keystorePassword = "mypassword";
+        KeyStore keystore = KeyStore.getInstance("PKCS12");
+        keystore.load(new FileInputStream(keystorePath), keystorePassword.toCharArray());
+        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        keyManagerFactory.init(keystore, keystorePassword.toCharArray());
+
+        // create a custom trustmanager
+        TrustManager[] trustAllCertificates = new TrustManager[]{
+                new X509TrustManager() {
+                    public X509Certificate[] getAcceptedIssuers() {
+                        return null;
+                    }
+
+                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                    }
+
+                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                    }
+                }
+        };
+
+        // Create and set up the SSLContext
+        try {
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(keyManagerFactory.getKeyManagers(), trustAllCertificates, null);
+            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

@@ -1,5 +1,8 @@
 package io.horizen;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import java.io.FileInputStream;
@@ -9,23 +12,13 @@ import static spark.Spark.*;
 
 
 public class Main {
-    public static void main(String[] args) throws Exception {
-        String keystoreFilePath = "keystore/keystore.p12";
-        String keystorePassword = "mypassword";
 
-        KeyStore keystore = KeyStore.getInstance("PKCS12");
-        keystore.load(new FileInputStream(keystoreFilePath), keystorePassword.toCharArray());
+    private static final Logger log =  LoggerFactory.getLogger(Main.class);
 
-        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-        keyManagerFactory.init(keystore, keystorePassword.toCharArray());
+    public static void main(String[] args) {
+        setupSSL();
 
-        // Create the SSLContext
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(keyManagerFactory.getKeyManagers(), null, null);
-
-        secure(keystoreFilePath, keystorePassword, null, null);
-
-        port(8080); // Set the server port
+        port(8080);
 
         checkMocks();
 
@@ -38,6 +31,27 @@ public class Main {
             stop();
             System.out.println("Server stopped");
         }));
+    }
+
+    private static void setupSSL() {
+        String keystoreFilePath = "keystore/keystore.p12";
+        String keystorePassword = "mypassword";
+
+        try {
+            KeyStore keystore =  KeyStore.getInstance("PKCS12");
+            keystore.load(new FileInputStream(keystoreFilePath), keystorePassword.toCharArray());
+            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+            keyManagerFactory.init(keystore, keystorePassword.toCharArray());
+
+            SSLContext sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(keyManagerFactory.getKeyManagers(), null, null);
+        } catch (Exception ex) {
+            log.error(ex.getMessage());
+            System.out.println(ex.getMessage());
+            return;
+        }
+
+        secure(keystoreFilePath, keystorePassword, null, null);
     }
 
     private static void checkMocks() {
