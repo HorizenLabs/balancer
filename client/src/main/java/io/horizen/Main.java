@@ -275,6 +275,30 @@ public class Main {
         }
     }
 
+    private static void getOwnerScAddresses() throws IOException {
+        System.out.println("Calling get owner sc addresses");
+
+        URL url = new URL(HTTP_SERVER_URL + "api/v1/getOwnerScAddresses");
+        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        connection.setRequestMethod("POST");
+
+        int responseCode = connection.getResponseCode();
+        if (responseCode == HttpsURLConnection.HTTP_OK) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+
+                String responseJsonPretty = gson.toJson(gson.fromJson(response.toString(), Object.class));
+                System.out.println(responseJsonPretty);
+            }
+        } else {
+            System.out.println("HTTP request failed with response code: " + responseCode);
+        }
+    }
+
     private static void helloWorld() throws IOException {
         System.out.println("Calling hello world");
 
@@ -332,6 +356,9 @@ public class Main {
                 } else {
                     getOwnerships(null);
                 }
+                break;
+            case "get_owner_sc_addresses":
+                getOwnerScAddresses();
                 break;
             case "add_ownership":
                 if (args.length > 2) {

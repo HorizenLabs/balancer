@@ -29,10 +29,10 @@ public class Balancer {
         post("/api/v1/getProposals", this::getProposals);
         post("/api/v1/createProposal", this::createProposal);
         post("/api/v1/addOwnership", this::addOwnership);
+        post("/api/v1/getOwnerScAddresses", this::getOwnerScAddresses);
     }
 
     private String addOwnership(Request req, Response res) {
-        //todo should check what happenes if address and owner not set
         Gson gson = MyGsonManager.getGson();
         String address;
         String owner;
@@ -63,6 +63,29 @@ public class Balancer {
         }
 
         return gson.toJson(Constants.MOCK_MC_ADDRESS_MAP);
+    }
+
+    private String getOwnerScAddresses(Request req, Response res) {
+        Gson gson = MyGsonManager.getGson();
+        List<String> ret;
+
+        if (Constants.MOCK_NSC) {
+            ret = Constants.MOCK_OWNER_SC_ADDR_LIST;
+        }
+        else {
+            //todo
+            try {
+                ret = SnapshotMethods.getOwnerScAddrList();
+            }
+            catch (Exception ex) {
+                int code = 302;
+                String description = "Could not get owner sc addresses";
+                String detail = "An exception occurred: " + ex; //todo java spark automatically adds escaping
+                return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+            }
+        }
+
+        return gson.toJson(ret);
     }
 
     private String getVotingPower(Request req, Response res) {

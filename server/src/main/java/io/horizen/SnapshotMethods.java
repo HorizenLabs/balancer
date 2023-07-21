@@ -36,6 +36,13 @@ public class SnapshotMethods {
             return NscMethods.getNscOwnerships(scAddress);
     }
 
+    public static List<String> getOwnerScAddrList() throws Exception {
+        if (Constants.MOCK_NSC)
+            return Constants.MOCK_OWNER_SC_ADDR_LIST;
+        else
+            return NscMethods.getNscOwnerScAddresses();
+    }
+
     public static void addOwnershipEntry(String address, String owner) throws Exception {
         try {
             Base58.decodeChecked(address);

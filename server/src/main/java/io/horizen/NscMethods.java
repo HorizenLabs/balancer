@@ -48,7 +48,7 @@ public class NscMethods {
         HttpURLConnection connection = Helper.sendRequestWithAuth(Constants.NSC_URL + "ethv1", requestBody, "user", "Horizen");
 
         if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            throw new Exception();
+            throw new Exception(); //todo fix
         }
 
         // Read the response body
@@ -77,13 +77,54 @@ public class NscMethods {
         return getKeyOwnershipFromAbi(abiReturnValue);
     }
 
+
+    public static List<String> getNscOwnerScAddresses() throws Exception {
+        String method = "getKeyOwnerScAddresses()";
+        byte[] selector = Arrays.copyOf(Hash.sha3(method.getBytes()),4);
+        String abiString = "0x" + Numeric.toHexStringNoPrefix(selector);
+
+        String requestBody = buildNscRequestBody(abiString);
+        HttpURLConnection connection = Helper.sendRequestWithAuth(Constants.NSC_URL + "ethv1", requestBody, "user", "Horizen");
+
+        if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
+            throw new Exception();
+        }
+
+        // Read the response body
+        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        StringBuilder response = new StringBuilder();
+        String line;
+        while ((line = reader.readLine()) != null) {
+            response.append(line);
+        }
+        reader.close();
+
+        // Print the response body
+        System.out.println("Response Body: " + response);
+
+        // Parse the JSON response
+        JsonObject responseObject = JsonParser.parseString(response.toString()).getAsJsonObject();
+
+        // Get the result value
+        String abiReturnValue = responseObject.get("result").getAsString();
+
+        // Remove the "0x" prefix
+        if (abiReturnValue.startsWith("0x")) {
+            abiReturnValue = abiReturnValue.substring(2);
+        }
+
+        return getOwnerScAddrFromAbi(abiReturnValue);
+    }
+
+
+
     public static Map<String, List<String>> getKeyOwnershipFromAbi(String abiReturnValue) {
         int startDataOffset = TypeDecoder.decode(abiReturnValue.substring(0,64), Uint32.class).getValue().intValue() * 2;
         int endDataOffset = startDataOffset + 64;
         int listSize = TypeDecoder.decode(abiReturnValue.substring(startDataOffset, endDataOffset), Uint32.class).getValue().intValue();
 
         Map<String, List<String>> scAssociations = new HashMap<>();
-        for (int i=0; i<listSize; i++) {
+        for (int i = 0; i < listSize; i++) {
             startDataOffset = endDataOffset;
             endDataOffset = startDataOffset + 64;
             Address addressPref = TypeDecoder.decode(abiReturnValue.substring(startDataOffset, endDataOffset), Address.class);
@@ -114,6 +155,24 @@ public class NscMethods {
         }
 
         return scAssociations;
+    }
+
+    public static List<String> getOwnerScAddrFromAbi(String abiReturnValue) {
+        int startDataOffset = TypeDecoder.decode(abiReturnValue.substring(0,64), Uint32.class).getValue().intValue() * 2;
+        int endDataOffset = startDataOffset + 64;
+        int listSize = TypeDecoder.decode(abiReturnValue.substring(startDataOffset, endDataOffset), Uint32.class).getValue().intValue();
+
+        List<String> scAddresses = new ArrayList<>();
+        for (int i = 0; i < listSize; i++) {
+            startDataOffset = endDataOffset;
+            endDataOffset = startDataOffset + 64;
+            Address addressPref = TypeDecoder.decode(abiReturnValue.substring(startDataOffset, endDataOffset), Address.class);
+
+            String scAddressChecksumFmt = Keys.toChecksumAddress(addressPref.getValue());
+            scAddresses.add(scAddressChecksumFmt);
+        }
+
+        return scAddresses;
     }
 
     private static String buildNscRequestBody(String abiString) {
