@@ -8,7 +8,6 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyStore;
-import java.security.KeyStoreException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
@@ -225,7 +224,6 @@ public class Main {
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
-//        connection.setSSLSocketFactory(sslSocketFactory);
 
         try (OutputStream outputStream = connection.getOutputStream()) {
             outputStream.write("{}".getBytes());
@@ -287,28 +285,21 @@ public class Main {
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Content-Type", "application/json");
-        //connection.setDoOutput(true);
-//        connection.setSSLSocketFactory(sslSocketFactory);
-
-//        try (OutputStream outputStream = connection.getOutputStream()) {
-//            outputStream.write("{}".getBytes());
-//        }
 
         int responseCode = connection.getResponseCode();
         System.out.println(responseCode);
-//        if (responseCode == HttpURLConnection.HTTP_OK) {
-//            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-//                StringBuilder response = new StringBuilder();
-//                String line;
-//                while ((line = reader.readLine()) != null) {
-//                    response.append(line);
-//                }
-//                String responseJsonPretty = gson.toJson(gson.fromJson(response.toString(), Object.class));
-//                System.out.println(responseJsonPretty);
-//            }
-//        } else {
-//            System.out.println("HTTP request failed with response code: " + responseCode);
-//        }
+        if (responseCode == HttpURLConnection.HTTP_OK) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                System.out.println(response);
+            }
+        } else {
+            System.out.println("HTTP request failed with response code: " + responseCode);
+        }
     }
 
     public static void main(String[] args) throws Exception {
@@ -317,110 +308,9 @@ public class Main {
             return;
         }
 
-//        System.setProperty("javax.net.ssl.trustStore", "client/src/main/resources/client-truststore.jks");
-//        System.setProperty("javax.net.ssl.trustStorePassword", "changeit"); // Change this to your truststore password
-//
-//        //String keystorePath = "/home/david/Desktop/balancer git ssh/balancer/server/src/main/resources/keystore.jks";
-//        String keystorePath = "client/src/main/resources/keystore.jks";
-//        String keystorePassword = "changeit";
-//
-//        String truststorePath = "client/src/main/resources/client-truststore.jks";
-//        String truststorePassword = "changeit";
-//
-//        System.setProperty("javax.net.ssl.trustStore", "client/src/main/resources/client-truststore.jks");
-//        System.setProperty("javax.net.ssl.trustStorePassword", "changeit"); // Change this to your truststore password
-//
-//
-//        try {
-//            KeyStore keystore = KeyStore.getInstance("JKS");
-//            keystore.load(new FileInputStream(keystorePath), keystorePassword.toCharArray());
-//
-//            KeyStore truststore = KeyStore.getInstance("JKS");
-//            truststore.load(new FileInputStream(truststorePath), truststorePassword.toCharArray());
-//
-//
-//            // Create an SSL context and initialize it with the keystore and truststore
-//            SSLContext sslContext = SSLContext.getInstance("TLS");
-//            KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-//            keyManagerFactory.init(keystore, keystorePassword.toCharArray());
-//            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-//            trustManagerFactory.init(truststore);
-//            sslContext.init(keyManagerFactory.getKeyManagers(), trustManagerFactory.getTrustManagers(), null);
-//
-//            // Set the SSLContext as the default context for HttpsURLConnection
-//            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-
-
-
-
-
-
-//        // Load the keystore with the client certificate
-//        String keystorePath = "client/src/main/resources/keystore.jks";
-//        String keystorePassword = "changeit";
-//        System.setProperty("javax.net.ssl.keyStore", keystorePath);
-//        System.setProperty("javax.net.ssl.keyStorePassword", keystorePassword);
-//
-//
-//        // create a custom trustmanager
-//        TrustManager[] trustAllCertificates = new TrustManager[]{
-//                new X509TrustManager() {
-//                    public X509Certificate[] getAcceptedIssuers() {
-//                        return null;
-//                    }
-//
-//                    public void checkClientTrusted(X509Certificate[] certs, String authType) {
-//                    }
-//
-//                    public void checkServerTrusted(X509Certificate[] certs, String authType) {
-//                    }
-//                }
-//        };
-//
-//        // Create and set up the SSLContext
-//        SSLContext sslContext;
-//        try {
-//            sslContext = SSLContext.getInstance("TLS");
-//            sslContext.init(null, trustAllCertificates, new java.security.SecureRandom());
-//            HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
-//            HttpsURLConnection.setDefaultHostnameVerifier((hostname, session) -> true);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return;
-//        }
-
-//        sslSocketFactory = sslContext.getSocketFactory();
-//
-//        HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
-
-
-
-
-
-
-
-
-        //treci nacin
-//        KeyStore clientKeyStore = KeyStore.getInstance(KeyStore.getDefaultType());
-//        clientKeyStore.load(new FileInputStream("client/src/main/resources/client.crt"), "changeit".toCharArray());
-//
-//        KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-//        kmf.init(clientKeyStore, "changeit".toCharArray());
-//
-//        SSLContext sslContext = SSLContext.getInstance("TLS");
-//        sslContext.init(kmf.getKeyManagers(), null, null);
-
-
-        //cetvrti
         // Load the keystore with the client certificate
-        String keystorePath = "/home/david/Desktop/balancer git ssh/balancer/client/src/main/resources/keystore.p12";
+        String keystorePath = "keystore/keystore.p12";
         String keystorePassword = "mypassword";
-        System.setProperty("javax.net.ssl.keyStore", keystorePath);
-        System.setProperty("javax.net.ssl.keyStorePassword", keystorePassword);
-
 
         // create a custom trustmanager
         TrustManager[] trustAllCertificates = new TrustManager[]{
@@ -456,10 +346,7 @@ public class Main {
         }
 
         sslSocketFactory = sslContext.getSocketFactory();
-
         HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
-
-
 
         // Command to execute
         String command = args[0];
