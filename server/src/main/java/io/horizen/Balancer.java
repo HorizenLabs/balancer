@@ -33,10 +33,17 @@ public class Balancer {
 
     private String addOwnership(Request req, Response res) {
         //todo should check what happenes if address and owner not set
-        String address = req.queryParams("address");
-        String owner = req.queryParams("owner");
-
         Gson gson = MyGsonManager.getGson();
+        String address;
+        String owner;
+        try {
+            JsonObject jsonObject = gson.fromJson(req.body(), JsonObject.class);
+            address = jsonObject.get("address").getAsString();
+            owner = jsonObject.get("owner").getAsString();
+        } catch (Exception ex) {
+            System.out.println("parameters do not exist");
+            throw new RuntimeException("parameters do not exist"); //todo fix
+        }
 
         if (Constants.MOCK_NSC) {
             try {
@@ -46,7 +53,7 @@ public class Balancer {
                 String description = "Can not add ownership";
                 String detail = "Invalid owner string length != 42 or not an hex string";
                 return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
-            }
+            } //todo more error codes
         }
         else {
             int code = 109;
@@ -62,6 +69,11 @@ public class Balancer {
 
         String address = req.queryParams("addresses");
         Gson gson = MyGsonManager.getGson();
+
+        if (address == null) {
+            System.out.println("address does not exist");
+            throw new RuntimeException(); //todo fix
+        }
 
         if (SnapshotMethods.getActiveProposal() == null) {
             int code = 107;
@@ -100,15 +112,28 @@ public class Balancer {
         ChainTip chainTip;
 
         Gson gson = MyGsonManager.getGson();
-        JsonObject jsonObject = gson.fromJson(req.body(), JsonObject.class);
 
-        String body = jsonObject.get("Body").getAsString();
-        Date startDate = null;
-        Date endDate = null;
-        String start = extractValueFromBody(body, "Start");
-        String end = extractValueFromBody(body, "End");
-        String author = extractValueFromBody(body, "Author");
-        String proposalId = jsonObject.get("ProposalID").getAsString();
+        Date startDate;
+        Date endDate;
+        String start;
+        String end;
+        String author;
+        String proposalId;
+        try {
+            JsonObject jsonObject = gson.fromJson(req.body(), JsonObject.class);
+
+            String body = jsonObject.get("Body").getAsString();
+            startDate = null;
+            endDate = null;
+            start = extractValueFromBody(body, "Start");
+            end = extractValueFromBody(body, "End");
+            author = extractValueFromBody(body, "Author");
+            proposalId = jsonObject.get("ProposalID").getAsString();
+        } catch (Exception ex) {
+            System.out.println("parameters do not exist");
+            throw new RuntimeException(); //todo fix
+        }
+
 
         SimpleDateFormat format = new SimpleDateFormat("dd MMM yy HH:mm z");
 //        format.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -156,11 +181,19 @@ public class Balancer {
         if (Constants.MOCK_NSC)
             ret = Constants.MOCK_MC_ADDRESS_MAP;
         else {
-            String address = req.queryParams("address");
+            String scAddress;
             try {
-                ret = SnapshotMethods.getMcAddressMap(address);
+                JsonObject jsonObject = MyGsonManager.getGson().fromJson(req.body(), JsonObject.class);
+                scAddress = jsonObject.get("scAddress").getAsString();
+            }
+            catch (Exception ex) {
+                System.out.println("scAddress does not exist");
+                throw new RuntimeException("scAddress does not exist"); //todo fix
+            }
+            try {
+                ret = SnapshotMethods.getMcAddressMap(scAddress);
             } catch (Exception e) {
-                throw new RuntimeException(e);
+                throw new RuntimeException(e); //todo fix
             }
         }
         Gson gson = MyGsonManager.getGson();

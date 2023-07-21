@@ -95,6 +95,7 @@ public class RosettaMethods {
                     throw new Exception();
             }
         }
+        //todo error if address does not exist
 
         return balance;
     }

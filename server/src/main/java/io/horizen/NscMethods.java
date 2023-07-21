@@ -36,7 +36,7 @@ public class NscMethods {
                 scAddress = scAddress.substring(2);
 
             if (scAddress.length() != 40 || !Pattern.matches("[0-9A-Fa-f]+", scAddress))
-                throw new RuntimeException();
+                throw new RuntimeException();//todo fix
 
             method = "getKeyOwnerships(address)";
             byte[] selector = Arrays.copyOf(Hash.sha3(method.getBytes()),4);
