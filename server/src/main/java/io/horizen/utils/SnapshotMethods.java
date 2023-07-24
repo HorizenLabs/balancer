@@ -3,7 +3,7 @@ package io.horizen.utils;
 import io.horizen.data_types.VotingProposal;
 import io.horizen.exception.OwnerStringException;
 import io.horizen.exception.OwnershipAlreadySetException;
-import io.horizen.helpers.Constants;
+import io.horizen.helpers.Definitions;
 import io.horizen.helpers.Helper;
 import org.bitcoinj.core.AddressFormatException;
 import org.bitcoinj.core.Base58;
@@ -36,15 +36,15 @@ public class SnapshotMethods {
     }
 
     public static Map<String, List<String>> getMcAddressMap(String scAddress) throws Exception {
-        if (Constants.MOCK_NSC)
-            return Constants.MOCK_MC_ADDRESS_MAP;
+        if (Definitions.MOCK_NSC)
+            return Definitions.MOCK_MC_ADDRESS_MAP;
         else
             return NscMethods.getNscOwnerships(scAddress);
     }
 
     public static List<String> getOwnerScAddrList() throws Exception {
-        if (Constants.MOCK_NSC)
-            return Constants.MOCK_OWNER_SC_ADDR_LIST;
+        if (Definitions.MOCK_NSC)
+            return Definitions.MOCK_OWNER_SC_ADDR_LIST;
         else
             return NscMethods.getNscOwnerScAddresses();
     }
@@ -55,8 +55,8 @@ public class SnapshotMethods {
         if (owner.length() != 42  || !owner.substring(2).matches("[0-9A-Fa-f]+"))
             throw new OwnerStringException();
         else {
-            if (Constants.MOCK_MC_ADDRESS_MAP.containsKey(owner)) {
-                List<String> addresses = Constants.MOCK_MC_ADDRESS_MAP.get(owner);
+            if (Definitions.MOCK_MC_ADDRESS_MAP.containsKey(owner)) {
+                List<String> addresses = Definitions.MOCK_MC_ADDRESS_MAP.get(owner);
                 if (addresses.contains(address))
                     throw new OwnershipAlreadySetException();
                 else

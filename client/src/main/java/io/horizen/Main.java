@@ -299,30 +299,6 @@ public class Main {
         }
     }
 
-    private static void helloWorld() throws IOException {
-        System.out.println("Calling hello world");
-
-        URL url = new URL(HTTP_SERVER_URL + "hello");
-        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("Content-Type", "application/json");
-
-        int responseCode = connection.getResponseCode();
-        System.out.println(responseCode);
-        if (responseCode == HttpsURLConnection.HTTP_OK) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-                System.out.println(response);
-            }
-        } else {
-            System.out.println("HTTP request failed with response code: " + responseCode);
-        }
-    }
-
     public static void main(String[] args) throws Exception {
         setupSSL();
 
@@ -336,9 +312,6 @@ public class Main {
         switch (command) {
             case "new_proposal":
                 newProposal();
-                break;
-            case "hello":
-                helloWorld();
                 break;
             case "get_voting_power":
                 if (args.length > 1) {
@@ -402,8 +375,8 @@ public class Main {
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(keyManagerFactory.getKeyManagers(), trustAllCertificates, null);
             HttpsURLConnection.setDefaultSSLSocketFactory(sslContext.getSocketFactory());
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 }

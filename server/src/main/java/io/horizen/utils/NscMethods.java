@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.horizen.helpers.Constants;
+import io.horizen.helpers.Definitions;
 import io.horizen.helpers.Helper;
 import io.horizen.helpers.MyGsonManager;
 import org.web3j.abi.TypeDecoder;
@@ -48,7 +48,7 @@ public class NscMethods {
         }
 
         String requestBody = buildNscRequestBody(abiString);
-        HttpURLConnection connection = Helper.sendRequestWithAuth(Constants.NSC_URL + "ethv1", requestBody, "user", "Horizen");
+        HttpURLConnection connection = Helper.sendRequestWithAuth(Definitions.NSC_URL + "ethv1", requestBody, "user", "Horizen");
 
         if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new Exception(connection.getResponseCode() + " " + connection.getResponseMessage());
@@ -87,7 +87,7 @@ public class NscMethods {
         String abiString = "0x" + Numeric.toHexStringNoPrefix(selector);
 
         String requestBody = buildNscRequestBody(abiString);
-        HttpURLConnection connection = Helper.sendRequestWithAuth(Constants.NSC_URL + "ethv1", requestBody, "user", "Horizen");
+        HttpURLConnection connection = Helper.sendRequestWithAuth(Definitions.NSC_URL + "ethv1", requestBody, "user", "Horizen");
 
         if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new Exception("Problem with getKeyOwnerScAddresses()");
@@ -190,7 +190,7 @@ public class NscMethods {
 
         // Create the params JSON object
         JsonObject paramsObject = new JsonObject();
-        paramsObject.addProperty("from", Constants.ETH_CALL_FROM_ADDRESS);
+        paramsObject.addProperty("from", Definitions.ETH_CALL_FROM_ADDRESS);
         paramsObject.addProperty("to", "0x0000000000000000000088888888888888888888");
         paramsObject.addProperty("value", "0x00");
         paramsObject.addProperty("gasLimit", "0x21000");

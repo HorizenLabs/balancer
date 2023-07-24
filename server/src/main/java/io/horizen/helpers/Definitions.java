@@ -3,7 +3,7 @@ package io.horizen.helpers;
 import java.util.*;
 
 //todo maybe put constants in config file
-public final class Constants {
+public final class Definitions {
 
     // Native smart contract is reachable via this end points
     public static final String NSC_URL = "http://zendao-tn-1.de.horizenlabs.io:8200/";

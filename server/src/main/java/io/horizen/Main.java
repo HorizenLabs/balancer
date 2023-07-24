@@ -1,6 +1,6 @@
 package io.horizen;
 
-import io.horizen.helpers.Constants;
+import io.horizen.helpers.Definitions;
 import io.horizen.utils.Balancer;
 import io.horizen.utils.SnapshotMethods;
 import org.slf4j.Logger;
@@ -49,21 +49,20 @@ public class Main {
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(keyManagerFactory.getKeyManagers(), null, null);
         } catch (Exception ex) {
-            log.error(ex.getMessage());
-            System.out.println(ex.getMessage());
-            return;
+            log.error("Error in setup ssl " + ex);
+            throw new RuntimeException(ex);
         }
 
         secure(keystoreFilePath, keystorePassword, null, null);
     }
 
     private static void checkMocks() {
-        if (Constants.MOCK_ROSETTA) {
+        if (Definitions.MOCK_ROSETTA) {
             System.out.println("##################################");
             System.out.println("##    MOCKING ROSETTA MODULE    ##");
             System.out.println("##################################");
         }
-        if (Constants.MOCK_NSC) {
+        if (Definitions.MOCK_NSC) {
             System.out.println("##################################");
             System.out.println("##    MOCKING NSC MODULE    ##");
             System.out.println("##################################");

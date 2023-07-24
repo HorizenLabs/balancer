@@ -2,7 +2,8 @@ package io.horizen.utils;
 
 import com.google.gson.*;
 import io.horizen.data_types.ChainTip;
-import io.horizen.helpers.Constants;
+import io.horizen.exception.GetMcAddressMapException;
+import io.horizen.helpers.Definitions;
 import io.horizen.helpers.Helper;
 import io.horizen.helpers.MyGsonManager;
 
@@ -15,12 +16,12 @@ import java.util.Map;
 public class RosettaMethods {
 
     public static ChainTip getChainTip() throws Exception {
-        if (Constants.MOCK_ROSETTA)
+        if (Definitions.MOCK_ROSETTA)
             return new ChainTip(100, "000439739cac7736282169bb10d368123ca553c45ea6d4509d809537cd31aa0d");
 
         // Call Rosetta endpoint /network/status
-        String url = Constants.ROSETTA_URL + "network/status";
-        String requestBody = "{\"network_identifier\": {\"blockchain\": \"Zen\", \"network\": \"" + Constants.NETWORK + "\"}}";
+        String url = Definitions.ROSETTA_URL + "network/status";
+        String requestBody = "{\"network_identifier\": {\"blockchain\": \"Zen\", \"network\": \"" + Definitions.NETWORK + "\"}}";
 
         try {
             // Get the response code
@@ -65,19 +66,24 @@ public class RosettaMethods {
 
     public static Double getAddressBalance(String scAddress) throws Exception {
         double balance = 0;
-        Map<String, List<String>> mcAddressMap = SnapshotMethods.getMcAddressMap(scAddress);
-
+        Map<String, List<String>> mcAddressMap;
+        try {
+            mcAddressMap = SnapshotMethods.getMcAddressMap(scAddress);
+        }
+        catch (Exception ex) {
+            throw new GetMcAddressMapException();
+        }
         if (mcAddressMap.containsKey(scAddress)) {
             List<String> mcAddresses = mcAddressMap.get(scAddress);
 
-            if (Constants.MOCK_ROSETTA) {
+            if (Definitions.MOCK_ROSETTA) {
                 System.out.println("MOCK ROSETTA RESPONSE");
                 return 123456789.0;
             }
 
             for (String mcAddress : mcAddresses) {
                 String body = buildRosettaRequestBody(mcAddress);
-                HttpURLConnection connection = Helper.sendRequest(Constants.ROSETTA_URL + "account/balance", body);
+                HttpURLConnection connection = Helper.sendRequest(Definitions.ROSETTA_URL + "account/balance", body);
 
                 if(connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                     // Parse the JSON response
@@ -103,7 +109,7 @@ public class RosettaMethods {
         // Define ROSETTA_REQUEST_TEMPLATE
         JsonObject rosettaRequestTemplate = new JsonObject();
         rosettaRequestTemplate.addProperty("blockchain", "Zen");
-        rosettaRequestTemplate.addProperty("network", Constants.NETWORK);
+        rosettaRequestTemplate.addProperty("network", Definitions.NETWORK);
 
         // Create the request body
         JsonObject requestBody = new JsonObject();

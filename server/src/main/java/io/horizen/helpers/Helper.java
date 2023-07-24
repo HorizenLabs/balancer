@@ -71,7 +71,7 @@ public class Helper {
     }
 
     public static void writeProposalToFile(VotingProposal votingProposal) throws Exception {
-        String filePath = Constants.proposalJsonDataPath + Constants.proposalJsonDataFileName;
+        String filePath = Definitions.proposalJsonDataPath + Definitions.proposalJsonDataFileName;
         String jsonProposal = votingProposal.toJson();
 
         // Create directories if they don't exist
@@ -85,7 +85,7 @@ public class Helper {
     }
 
     public static VotingProposal readProposalFromFile() {
-        String filePath = Constants.proposalJsonDataPath + Constants.proposalJsonDataFileName;
+        String filePath = Definitions.proposalJsonDataPath + Definitions.proposalJsonDataFileName;
 
         // Check if the file exists before reading
         File file = new File(filePath);
@@ -100,8 +100,8 @@ public class Helper {
             while ((line = reader.readLine()) != null) {
                 jsonData.append(line);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ex) {
+            ex.printStackTrace();
         }
 
         return MyGsonManager.getGson().fromJson(jsonData.toString(), VotingProposal.class);
