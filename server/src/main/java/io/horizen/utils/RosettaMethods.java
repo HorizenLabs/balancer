@@ -28,19 +28,14 @@ public class RosettaMethods {
             HttpURLConnection connection = Helper.sendRequest(url, requestBody);
             int responseCode = connection.getResponseCode();
 
-            // Read the response
-            BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-            String line;
-            StringBuilder response = new StringBuilder();
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-            reader.close();
-
-            // Handle the response
             if (responseCode == HttpURLConnection.HTTP_OK) {
-                System.out.println("POST request successful");
-                System.out.println("Response: " + response);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                String line;
+                StringBuilder response = new StringBuilder();
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                reader.close();
 
                 // Parse the JSON response
                 JsonObject responseObject = JsonParser.parseString(response.toString()).getAsJsonObject();
@@ -56,7 +51,8 @@ public class RosettaMethods {
                         .getAsString();
 
                 return new ChainTip(chainHeight, bestBlockHash);
-            } else
+            }
+            else
                 throw new Exception(connection.getResponseCode() + " " + connection.getResponseMessage());
         } catch (Exception ex) {
             ex.printStackTrace();
