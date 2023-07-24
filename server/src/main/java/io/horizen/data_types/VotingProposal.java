@@ -1,6 +1,7 @@
-package io.horizen;
+package io.horizen.data_types;
 
 import com.google.gson.Gson;
+import io.horizen.helpers.MyGsonManager;
 
 import java.util.Date;
 

@@ -1,9 +1,12 @@
-package io.horizen;
+package io.horizen.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import io.horizen.helpers.Constants;
+import io.horizen.helpers.Helper;
+import io.horizen.helpers.MyGsonManager;
 import org.web3j.abi.TypeDecoder;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.generated.Bytes3;
@@ -36,7 +39,7 @@ public class NscMethods {
                 scAddress = scAddress.substring(2);
 
             if (scAddress.length() != 40 || !Pattern.matches("[0-9A-Fa-f]+", scAddress))
-                throw new RuntimeException();//todo fix
+                throw new Exception("Invalid sc address length: {}, expected 40");
 
             method = "getKeyOwnerships(address)";
             byte[] selector = Arrays.copyOf(Hash.sha3(method.getBytes()),4);
@@ -48,7 +51,7 @@ public class NscMethods {
         HttpURLConnection connection = Helper.sendRequestWithAuth(Constants.NSC_URL + "ethv1", requestBody, "user", "Horizen");
 
         if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            throw new Exception(); //todo fix
+            throw new Exception(connection.getResponseCode() + " " + connection.getResponseMessage());
         }
 
         // Read the response body
@@ -87,7 +90,7 @@ public class NscMethods {
         HttpURLConnection connection = Helper.sendRequestWithAuth(Constants.NSC_URL + "ethv1", requestBody, "user", "Horizen");
 
         if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            throw new Exception();
+            throw new Exception("Problem with getKeyOwnerScAddresses()");
         }
 
         // Read the response body
@@ -109,9 +112,8 @@ public class NscMethods {
         String abiReturnValue = responseObject.get("result").getAsString();
 
         // Remove the "0x" prefix
-        if (abiReturnValue.startsWith("0x")) {
+        if (abiReturnValue.startsWith("0x"))
             abiReturnValue = abiReturnValue.substring(2);
-        }
 
         return getOwnerScAddrFromAbi(abiReturnValue);
     }

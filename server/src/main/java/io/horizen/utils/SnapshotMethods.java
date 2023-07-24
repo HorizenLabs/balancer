@@ -1,5 +1,11 @@
-package io.horizen;
+package io.horizen.utils;
 
+import io.horizen.data_types.VotingProposal;
+import io.horizen.exception.OwnerStringException;
+import io.horizen.exception.OwnershipAlreadySetException;
+import io.horizen.helpers.Constants;
+import io.horizen.helpers.Helper;
+import org.bitcoinj.core.AddressFormatException;
 import org.bitcoinj.core.Base58;
 
 import java.util.Collection;
@@ -12,7 +18,7 @@ public class SnapshotMethods {
     private static VotingProposal activeProposal;
     private static final Map<String, VotingProposal> proposals = new HashMap<>();
 
-    public static void storeProposalData(VotingProposal votingProposal) {
+    public static void storeProposalData(VotingProposal votingProposal) throws Exception {
         if (proposals.containsKey(votingProposal.getId()))
             return;
 
@@ -43,26 +49,18 @@ public class SnapshotMethods {
             return NscMethods.getNscOwnerScAddresses();
     }
 
-    public static void addOwnershipEntry(String address, String owner) throws Exception {
-        try {
-            Base58.decodeChecked(address);
-        }
-        catch (Exception ex) {
-            throw ex;
-        }
+    public static void addOwnershipEntry(String address, String owner) throws AddressFormatException, OwnerStringException, OwnershipAlreadySetException {
+        Base58.decodeChecked(address);
 
-        if (owner.length() != 42  || !owner.substring(2).matches("[0-9A-Fa-f]+")) {
-            throw new Exception();
-        }
+        if (owner.length() != 42  || !owner.substring(2).matches("[0-9A-Fa-f]+"))
+            throw new OwnerStringException();
         else {
             if (Constants.MOCK_MC_ADDRESS_MAP.containsKey(owner)) {
                 List<String> addresses = Constants.MOCK_MC_ADDRESS_MAP.get(owner);
-                if (addresses.contains(address)) {
-                    throw new Exception();
-                }
-                else {
+                if (addresses.contains(address))
+                    throw new OwnershipAlreadySetException();
+                else
                     addresses.add(address);
-                }
             }
         }
     }

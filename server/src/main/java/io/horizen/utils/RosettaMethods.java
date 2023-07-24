@@ -1,6 +1,10 @@
-package io.horizen;
+package io.horizen.utils;
 
 import com.google.gson.*;
+import io.horizen.data_types.ChainTip;
+import io.horizen.helpers.Constants;
+import io.horizen.helpers.Helper;
+import io.horizen.helpers.MyGsonManager;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -60,9 +64,7 @@ public class RosettaMethods {
     }
 
     public static Double getAddressBalance(String scAddress) throws Exception {
-
         double balance = 0;
-
         Map<String, List<String>> mcAddressMap = SnapshotMethods.getMcAddressMap(scAddress);
 
         if (mcAddressMap.containsKey(scAddress)) {
@@ -91,12 +93,8 @@ public class RosettaMethods {
                             .getAsInt();
                     balance += amount;
                 }
-                else
-                    throw new Exception();
             }
         }
-        //todo error if address does not exist
-
         return balance;
     }
 

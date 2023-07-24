@@ -1,4 +1,4 @@
-package io.horizen;
+package io.horizen.data_types;
 
 public class ChainTip {
     private final int blockHeight;

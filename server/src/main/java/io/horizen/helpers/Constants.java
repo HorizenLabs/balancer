@@ -1,4 +1,4 @@
-package io.horizen;
+package io.horizen.helpers;
 
 import java.util.*;
 

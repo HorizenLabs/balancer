@@ -1,5 +1,5 @@
-import io.horizen.NscMethods;
-import io.horizen.SnapshotMethods;
+import io.horizen.utils.NscMethods;
+import io.horizen.utils.SnapshotMethods;
 import org.junit.Test;
 
 import java.util.List;

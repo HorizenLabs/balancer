@@ -1,5 +1,8 @@
 package io.horizen;
 
+import io.horizen.helpers.Constants;
+import io.horizen.utils.Balancer;
+import io.horizen.utils.SnapshotMethods;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -1,6 +1,7 @@
-package io.horizen;
+package io.horizen.helpers;
 
 import com.google.gson.JsonObject;
+import io.horizen.data_types.VotingProposal;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -69,21 +70,17 @@ public class Helper {
         return connection;
     }
 
-    public static void writeProposalToFile(VotingProposal votingProposal) {
+    public static void writeProposalToFile(VotingProposal votingProposal) throws Exception {
         String filePath = Constants.proposalJsonDataPath + Constants.proposalJsonDataFileName;
         String jsonProposal = votingProposal.toJson();
 
-        try {
-            // Create directories if they don't exist
-            Path path = Paths.get(filePath);
-            Files.createDirectories(path.getParent());
+        // Create directories if they don't exist
+        Path path = Paths.get(filePath);
+        Files.createDirectories(path.getParent());
 
-            // Write the JSON data to the file
-            try (FileWriter fileWriter = new FileWriter(filePath)) {
-                fileWriter.write(jsonProposal);
-            }
-        } catch (IOException e) {
-            System.err.println("Error writing the JSON data to the file: " + e.getMessage());
+        // Write the JSON data to the file
+        try (FileWriter fileWriter = new FileWriter(filePath)) {
+            fileWriter.write(jsonProposal);
         }
     }
 
