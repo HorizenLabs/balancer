@@ -4,12 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.inject.Inject;
+import io.horizen.config.Settings;
 import io.horizen.data_types.ChainTip;
 import io.horizen.data_types.VotingProposal;
 import io.horizen.exception.GetMcAddressMapException;
 import io.horizen.exception.OwnerStringException;
 import io.horizen.exception.OwnershipAlreadySetException;
-import io.horizen.helpers.Definitions;
+import io.horizen.helpers.Constants;
 import io.horizen.helpers.Helper;
 import io.horizen.helpers.MyGsonManager;
 import io.horizen.services.RosettaService;
@@ -31,11 +32,13 @@ import static spark.Spark.get;
 import static spark.Spark.post;
 
 public class Balancer {
+    private final Settings settings;
     private final RosettaService rosettaService;
     private final SnapshotService snapshotService;
 
     @Inject
-    public Balancer(RosettaService rosettaService, SnapshotService snapshotService) {
+    public Balancer(Settings settings, RosettaService rosettaService, SnapshotService snapshotService) {
+        this.settings = settings;
         this.rosettaService = rosettaService;
         this.snapshotService = snapshotService;
     }
@@ -70,7 +73,7 @@ public class Balancer {
             return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
         }
 
-        if (Definitions.MOCK_NSC) {
+        if (settings.getMockNsc()) {
             try {
                 snapshotService.addOwnershipEntry(address, owner);
             }
@@ -108,7 +111,7 @@ public class Balancer {
 
         // Add the "ownerships" part
         JsonObject ownerships = new JsonObject();
-        for (Map.Entry<String, List<String>> entry : Definitions.MOCK_MC_ADDRESS_MAP.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : Constants.mockMcAddressMap.entrySet()) {
             String key = entry.getKey();
             List<String> value = entry.getValue();
 
@@ -137,8 +140,8 @@ public class Balancer {
         res.type("application/json");
         log.info("getOwnerScAddresses request");
 
-        if (Definitions.MOCK_NSC)
-            ret = Definitions.MOCK_OWNER_SC_ADDR_LIST;
+        if (settings.getMockNsc())
+            ret = Constants.mockOwnerScAddrList;
         else {
             try {
                 ret = snapshotService.getOwnerScAddrList();
@@ -306,8 +309,8 @@ public class Balancer {
         res.type("application/json");
         log.info("getOwnerships request with data " + req.body());
 
-        if (Definitions.MOCK_NSC)
-            ret = Definitions.MOCK_MC_ADDRESS_MAP;
+        if (settings.getMockNsc())
+            ret = Constants.mockMcAddressMap;
         else {
             String scAddress;
             try {

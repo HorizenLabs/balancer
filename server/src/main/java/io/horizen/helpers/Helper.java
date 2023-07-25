@@ -1,6 +1,7 @@
 package io.horizen.helpers;
 
 import com.google.gson.JsonObject;
+import io.horizen.config.Settings;
 import io.horizen.data_types.VotingProposal;
 
 import java.io.*;
@@ -13,6 +14,11 @@ import java.nio.file.Paths;
 import java.util.Base64;
 
 public class Helper {
+    private static Settings settings;
+
+    public static void initialize(Settings mySettings) {
+        settings = mySettings;
+    }
 
     public static HttpURLConnection sendRequest(String url, String data) throws Exception {
         URL endpointUrl = new URL(url);
@@ -71,7 +77,7 @@ public class Helper {
     }
 
     public static void writeProposalToFile(VotingProposal votingProposal) throws Exception {
-        String filePath = Definitions.proposalJsonDataPath + Definitions.proposalJsonDataFileName;
+        String filePath = settings.getProposalJsonDataPath() + settings.getProposalJsonDataFileName();
         String jsonProposal = votingProposal.toJson();
 
         // Create directories if they don't exist
@@ -85,7 +91,7 @@ public class Helper {
     }
 
     public static VotingProposal readProposalFromFile() {
-        String filePath = Definitions.proposalJsonDataPath + Definitions.proposalJsonDataFileName;
+        String filePath = settings.getProposalJsonDataPath() + settings.getProposalJsonDataFileName();
 
         // Check if the file exists before reading
         File file = new File(filePath);

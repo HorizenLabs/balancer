@@ -4,7 +4,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import io.horizen.helpers.Definitions;
+import com.google.inject.Inject;
+import io.horizen.config.Settings;
+import io.horizen.helpers.Constants;
 import io.horizen.helpers.Helper;
 import io.horizen.helpers.MyGsonManager;
 import io.horizen.services.NscService;
@@ -26,6 +28,13 @@ import java.util.*;
 import java.util.regex.Pattern;
 
 public class NscServiceImpl implements NscService {
+    private final Settings settings;
+
+    @Inject
+    public NscServiceImpl(Settings settings) {
+        this.settings = settings;
+    }
+
     public Map<String, List<String>> getNscOwnerships(String scAddress) throws Exception {
         String method;
         String abiString;
@@ -49,7 +58,7 @@ public class NscServiceImpl implements NscService {
         }
 
         String requestBody = buildNscRequestBody(abiString);
-        HttpURLConnection connection = Helper.sendRequestWithAuth(Definitions.NSC_URL + "ethv1", requestBody, "user", "Horizen");
+        HttpURLConnection connection = Helper.sendRequestWithAuth(settings.getNscUrl() + "ethv1", requestBody, "user", "Horizen");
 
         if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new Exception(connection.getResponseCode() + " " + connection.getResponseMessage());
@@ -88,7 +97,7 @@ public class NscServiceImpl implements NscService {
         String abiString = "0x" + Numeric.toHexStringNoPrefix(selector);
 
         String requestBody = buildNscRequestBody(abiString);
-        HttpURLConnection connection = Helper.sendRequestWithAuth(Definitions.NSC_URL + "ethv1", requestBody, "user", "Horizen");
+        HttpURLConnection connection = Helper.sendRequestWithAuth(settings.getNscUrl() + "ethv1", requestBody, "user", "Horizen");
 
         if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new Exception("Problem with getKeyOwnerScAddresses()");
@@ -191,7 +200,7 @@ public class NscServiceImpl implements NscService {
 
         // Create the params JSON object
         JsonObject paramsObject = new JsonObject();
-        paramsObject.addProperty("from", Definitions.ETH_CALL_FROM_ADDRESS);
+        paramsObject.addProperty("from", Constants.ethCallFromAddress);
         paramsObject.addProperty("to", "0x0000000000000000000088888888888888888888");
         paramsObject.addProperty("value", "0x00");
         paramsObject.addProperty("gasLimit", "0x21000");
