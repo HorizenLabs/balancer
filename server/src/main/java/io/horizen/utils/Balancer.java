@@ -88,7 +88,7 @@ public class Balancer {
         else {
             int code = 306;
             String description = "Could not add ownership";
-            String detail = "Method not supported with real native smart contract. Pls set mock_nsc=true in balancer"; //todo java spark automatically adds escaping
+            String detail = "Method not supported with real native smart contract. Pls set mock_nsc=true in balancer";
             log.error("Error in add ownership - " + detail);
             return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
         }

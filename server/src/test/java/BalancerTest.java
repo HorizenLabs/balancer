@@ -6,6 +6,7 @@ import org.junit.Test;
 import spark.Spark;
 import spark.utils.IOUtils;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -16,7 +17,7 @@ import static org.junit.Assert.assertEquals;
 public class BalancerTest {
 
     @BeforeClass
-    public static void setUp() throws Exception {
+    public static void setUp() {
         // Set up Spark before running the tests
         Main.main(null); // Start your Spark application
         Spark.awaitInitialization(); // Wait until Spark is ready
@@ -29,23 +30,9 @@ public class BalancerTest {
     }
 
     @Test
-    public void testHelloEndpoint() throws IOException {
-        // Make a GET request to the "/hello" endpoint
-        URL url = new URL("http://localhost:8080/hello");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-
-        // Get the response
-        String response = IOUtils.toString(connection.getInputStream());
-
-        // Assert the response
-        assertEquals("Hello, World!", response);
-    }
-
-    @Test
     public void testGetProposals() throws IOException {
-        URL url = new URL("http://localhost:8080/api/v1/getProposals");
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        URL url = new URL("https://localhost:8080/api/v1/getProposals");
+        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
 
         // Get the response

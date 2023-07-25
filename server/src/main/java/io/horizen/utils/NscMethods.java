@@ -120,7 +120,7 @@ public class NscMethods {
 
 
 
-    public static Map<String, List<String>> getKeyOwnershipFromAbi(String abiReturnValue) {
+    private static Map<String, List<String>> getKeyOwnershipFromAbi(String abiReturnValue) {
         int startDataOffset = TypeDecoder.decode(abiReturnValue.substring(0,64), Uint32.class).getValue().intValue() * 2;
         int endDataOffset = startDataOffset + 64;
         int listSize = TypeDecoder.decode(abiReturnValue.substring(startDataOffset, endDataOffset), Uint32.class).getValue().intValue();
@@ -159,7 +159,7 @@ public class NscMethods {
         return scAssociations;
     }
 
-    public static List<String> getOwnerScAddrFromAbi(String abiReturnValue) {
+    private static List<String> getOwnerScAddrFromAbi(String abiReturnValue) {
         int startDataOffset = TypeDecoder.decode(abiReturnValue.substring(0,64), Uint32.class).getValue().intValue() * 2;
         int endDataOffset = startDataOffset + 64;
         int listSize = TypeDecoder.decode(abiReturnValue.substring(startDataOffset, endDataOffset), Uint32.class).getValue().intValue();

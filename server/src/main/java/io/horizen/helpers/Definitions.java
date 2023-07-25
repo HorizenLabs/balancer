@@ -2,7 +2,6 @@ package io.horizen.helpers;
 
 import java.util.*;
 
-//todo maybe put constants in config file
 public final class Definitions {
 
     // Native smart contract is reachable via this end points
