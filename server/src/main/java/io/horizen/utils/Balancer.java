@@ -98,6 +98,13 @@ public class Balancer {
                 log.error("Error in add ownership " + ex);
                 return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
             }
+            catch (Exception ex) {
+                int code = 105;
+                String description = "Can not add ownership";
+                String detail = "Problem with adding ownership";
+                log.error("Error in add ownership " + ex);
+                return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+            }
         }
         else {
             int code = 306;
