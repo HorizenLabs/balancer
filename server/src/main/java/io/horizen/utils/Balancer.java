@@ -3,14 +3,17 @@ package io.horizen.utils;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.inject.Inject;
+import io.horizen.data_types.ChainTip;
 import io.horizen.data_types.VotingProposal;
 import io.horizen.exception.GetMcAddressMapException;
 import io.horizen.exception.OwnerStringException;
 import io.horizen.exception.OwnershipAlreadySetException;
-import io.horizen.data_types.ChainTip;
 import io.horizen.helpers.Definitions;
 import io.horizen.helpers.Helper;
 import io.horizen.helpers.MyGsonManager;
+import io.horizen.services.RosettaService;
+import io.horizen.services.SnapshotService;
 import org.bitcoinj.core.AddressFormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +31,14 @@ import static spark.Spark.get;
 import static spark.Spark.post;
 
 public class Balancer {
+    private final RosettaService rosettaService;
+    private final SnapshotService snapshotService;
+
+    @Inject
+    public Balancer(RosettaService rosettaService, SnapshotService snapshotService) {
+        this.rosettaService = rosettaService;
+        this.snapshotService = snapshotService;
+    }
 
     private static final Logger log =  LoggerFactory.getLogger(Balancer.class);
 
@@ -61,7 +72,7 @@ public class Balancer {
 
         if (Definitions.MOCK_NSC) {
             try {
-                SnapshotMethods.addOwnershipEntry(address, owner);
+                snapshotService.addOwnershipEntry(address, owner);
             }
             catch (AddressFormatException ex) {
                 int code = 102;
@@ -130,7 +141,7 @@ public class Balancer {
             ret = Definitions.MOCK_OWNER_SC_ADDR_LIST;
         else {
             try {
-                ret = SnapshotMethods.getOwnerScAddrList();
+                ret = snapshotService.getOwnerScAddrList();
             }
             catch (Exception ex) {
                 int code = 302;
@@ -159,7 +170,7 @@ public class Balancer {
             log.error("Error in getVotingPower - addresses parameter missing");
             return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
         }
-        if (SnapshotMethods.getActiveProposal() == null) {
+        if (snapshotService.getActiveProposal() == null) {
             int code = 305;
             String description = "No proposal have been received at this point";
             String detail = "Proposal should be received before getting voting power";
@@ -168,7 +179,7 @@ public class Balancer {
         }
         double balance;
         try {
-            balance = RosettaMethods.getAddressBalance(address);
+            balance = rosettaService.getAddressBalance(address);
         }
         catch (GetMcAddressMapException ex) {
             int code = 202;
@@ -241,7 +252,7 @@ public class Balancer {
             return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
         }
         try {
-            chainTip = RosettaMethods.getChainTip();
+            chainTip = rosettaService.getChainTip();
         } catch (Exception ex) {
             int code = 303;
             String description = "Can not create proposal";
@@ -252,7 +263,7 @@ public class Balancer {
 
         VotingProposal proposal = new VotingProposal(proposalId, chainTip.getBlockHeight(), chainTip.getBlockHash(), startDate,endDate, author);
         try {
-            SnapshotMethods.storeProposalData(proposal);
+            snapshotService.storeProposalData(proposal);
         } catch (Exception ex) {
             int code = 304;
             String description = "Can not create proposal";
@@ -283,7 +294,7 @@ public class Balancer {
         log.info("getProposals request");
         Gson gson = MyGsonManager.getGson();
 
-        Collection<VotingProposal> proposals = SnapshotMethods.getProposals();
+        Collection<VotingProposal> proposals = snapshotService.getProposals();
         log.info("getProposals response with data " + proposals);
 
         return gson.toJson(proposals);
@@ -307,7 +318,7 @@ public class Balancer {
                 scAddress = null;
             }
             try {
-                ret = SnapshotMethods.getMcAddressMap(scAddress);
+                ret = snapshotService.getMcAddressMap(scAddress);
             } catch (Exception ex) {
                 int code = 301;
                 String description = "Could not get ownership for sc address:" + scAddress;

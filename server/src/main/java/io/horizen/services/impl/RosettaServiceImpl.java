@@ -1,11 +1,14 @@
-package io.horizen.utils;
+package io.horizen.services.impl;
 
 import com.google.gson.*;
+import com.google.inject.Inject;
 import io.horizen.data_types.ChainTip;
 import io.horizen.exception.GetMcAddressMapException;
 import io.horizen.helpers.Definitions;
 import io.horizen.helpers.Helper;
 import io.horizen.helpers.MyGsonManager;
+import io.horizen.services.RosettaService;
+import io.horizen.services.SnapshotService;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -13,9 +16,15 @@ import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
 
-public class RosettaMethods {
+public class RosettaServiceImpl implements RosettaService {
+    private final SnapshotService snapshotService;
 
-    public static ChainTip getChainTip() throws Exception {
+    @Inject // This annotation is important for Guice to perform injection
+    public RosettaServiceImpl(SnapshotService snapshotService) {
+        this.snapshotService = snapshotService;
+    }
+
+    public ChainTip getChainTip() throws Exception {
         if (Definitions.MOCK_ROSETTA)
             return new ChainTip(100, "000439739cac7736282169bb10d368123ca553c45ea6d4509d809537cd31aa0d");
 
@@ -60,11 +69,11 @@ public class RosettaMethods {
         }
     }
 
-    public static Double getAddressBalance(String scAddress) throws Exception {
+    public Double getAddressBalance(String scAddress) throws Exception {
         double balance = 0;
         Map<String, List<String>> mcAddressMap;
         try {
-            mcAddressMap = SnapshotMethods.getMcAddressMap(scAddress);
+            mcAddressMap = snapshotService.getMcAddressMap(scAddress);
         }
         catch (Exception ex) {
             throw new GetMcAddressMapException();
@@ -101,7 +110,7 @@ public class RosettaMethods {
     }
 
 
-    private static String buildRosettaRequestBody(String mcAddress) {
+    private String buildRosettaRequestBody(String mcAddress) {
         // Define ROSETTA_REQUEST_TEMPLATE
         JsonObject rosettaRequestTemplate = new JsonObject();
         rosettaRequestTemplate.addProperty("blockchain", "Zen");
@@ -117,8 +126,8 @@ public class RosettaMethods {
         requestBody.add("account_identifier", accountIdentifier);
 
         JsonObject blockIdentifier = new JsonObject();
-        blockIdentifier.addProperty("index", SnapshotMethods.getActiveProposal().getBlockHeight());
-        blockIdentifier.addProperty("hash", SnapshotMethods.getActiveProposal().getBlockHash());
+        blockIdentifier.addProperty("index", snapshotService.getActiveProposal().getBlockHeight());
+        blockIdentifier.addProperty("hash", snapshotService.getActiveProposal().getBlockHash());
         requestBody.add("block_identifier", blockIdentifier);
 
         // Print the outgoing request

@@ -1,4 +1,4 @@
-package io.horizen.utils;
+package io.horizen.services.impl;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import io.horizen.helpers.Definitions;
 import io.horizen.helpers.Helper;
 import io.horizen.helpers.MyGsonManager;
+import io.horizen.services.NscService;
 import org.web3j.abi.TypeDecoder;
 import org.web3j.abi.datatypes.Address;
 import org.web3j.abi.datatypes.generated.Bytes3;
@@ -24,8 +25,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Pattern;
 
-public class NscMethods {
-    public static Map<String, List<String>> getNscOwnerships(String scAddress) throws Exception {
+public class NscServiceImpl implements NscService {
+    public Map<String, List<String>> getNscOwnerships(String scAddress) throws Exception {
         String method;
         String abiString;
         if (scAddress == null) {
@@ -81,7 +82,7 @@ public class NscMethods {
     }
 
 
-    public static List<String> getNscOwnerScAddresses() throws Exception {
+    public List<String> getNscOwnerScAddresses() throws Exception {
         String method = "getKeyOwnerScAddresses()";
         byte[] selector = Arrays.copyOf(Hash.sha3(method.getBytes()),4);
         String abiString = "0x" + Numeric.toHexStringNoPrefix(selector);
@@ -120,7 +121,7 @@ public class NscMethods {
 
 
 
-    private static Map<String, List<String>> getKeyOwnershipFromAbi(String abiReturnValue) {
+    private Map<String, List<String>> getKeyOwnershipFromAbi(String abiReturnValue) {
         int startDataOffset = TypeDecoder.decode(abiReturnValue.substring(0,64), Uint32.class).getValue().intValue() * 2;
         int endDataOffset = startDataOffset + 64;
         int listSize = TypeDecoder.decode(abiReturnValue.substring(startDataOffset, endDataOffset), Uint32.class).getValue().intValue();
@@ -159,7 +160,7 @@ public class NscMethods {
         return scAssociations;
     }
 
-    private static List<String> getOwnerScAddrFromAbi(String abiReturnValue) {
+    private List<String> getOwnerScAddrFromAbi(String abiReturnValue) {
         int startDataOffset = TypeDecoder.decode(abiReturnValue.substring(0,64), Uint32.class).getValue().intValue() * 2;
         int endDataOffset = startDataOffset + 64;
         int listSize = TypeDecoder.decode(abiReturnValue.substring(startDataOffset, endDataOffset), Uint32.class).getValue().intValue();
@@ -177,7 +178,7 @@ public class NscMethods {
         return scAddresses;
     }
 
-    private static String buildNscRequestBody(String abiString) {
+    private String buildNscRequestBody(String abiString) {
         // Create the request body JSON object
         JsonObject requestBody = new JsonObject();
 

@@ -1,8 +1,11 @@
 package io.horizen;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 import io.horizen.helpers.Definitions;
+import io.horizen.config.AppModule;
 import io.horizen.utils.Balancer;
-import io.horizen.utils.SnapshotMethods;
+import io.horizen.services.SnapshotService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,9 +28,12 @@ public class Main {
 
         checkMocks();
 
-        Balancer balancer = new Balancer();
+        Injector injector = Guice.createInjector(new AppModule());
+        Balancer balancer = injector.getInstance(Balancer.class);
         balancer.setupRoutes();
-        SnapshotMethods.initActiveProposal();
+
+        SnapshotService snapshotService = injector.getInstance(SnapshotService.class);
+        snapshotService.initActiveProposal();
 
         // Stop the server gracefully when the application shuts down
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
