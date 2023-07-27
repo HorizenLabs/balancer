@@ -71,19 +71,7 @@ public class Main {
             outputStream.write(gson.toJson(CREATE_PROPOSAL_MOCK).getBytes());
         }
 
-        int responseCode = connection.getResponseCode();
-        if (responseCode == HttpsURLConnection.HTTP_OK) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-                System.out.println(response);
-            }
-        } else {
-            System.out.println("HTTP request failed with response code: " + responseCode);
-        }
+        printResponse(connection);
     }
 
     private static void getVotingPower2() throws IOException {
@@ -99,19 +87,7 @@ public class Main {
             outputStream.write(gson.toJson(GET_VOTING_POWER_MOCK).getBytes());
         }
 
-        int responseCode = connection.getResponseCode();
-        if (responseCode == HttpsURLConnection.HTTP_OK) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-                System.out.println(response);
-            }
-        } else {
-            System.out.println("HTTP request failed with response code: " + responseCode);
-        }
+        printResponse(connection);
     }
     private static void getVotingPower1() throws IOException {
         System.out.println("Calling get voting power with data: " + GET_VOTING_POWER_MOCK);
@@ -121,19 +97,7 @@ public class Main {
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Content-Type", "application/json");
 
-        int responseCode = connection.getResponseCode();
-        if (responseCode == HttpsURLConnection.HTTP_OK) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-                System.out.println(response);
-            }
-        } else {
-            System.out.println("HTTP request failed with response code: " + responseCode);
-        }
+        printResponse(connection);
     }
 
     private static void getVotingPower(String address) throws IOException {
@@ -158,20 +122,7 @@ public class Main {
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
 
-        int responseCode = connection.getResponseCode();
-        if (responseCode == HttpsURLConnection.HTTP_OK) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-                String responseJsonPretty = gson.toJson(gson.fromJson(response.toString(), Object.class));
-                System.out.println(responseJsonPretty);
-            }
-        } else {
-            System.out.println("HTTP request failed with response code: " + responseCode);
-        }
+        printResponse(connection);
     }
 
     private static void addOwnership(String owner, String address) throws IOException {
@@ -196,21 +147,7 @@ public class Main {
             outputStream.write(gson.toJson(data).getBytes());
         }
 
-        int responseCode = connection.getResponseCode();
-        if (responseCode == HttpsURLConnection.HTTP_OK) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-                System.out.println("\naddOwnership response");
-                String responseJsonPretty = gson.toJson(gson.fromJson(response.toString(), Object.class));
-                System.out.println(responseJsonPretty);
-            }
-        } else {
-            System.out.println("HTTP request failed with response code: " + responseCode);
-        }
+        printResponse(connection);
     }
 
     private static void getProposals() throws IOException {
@@ -226,20 +163,7 @@ public class Main {
             outputStream.write("{}".getBytes());
         }
 
-        int responseCode = connection.getResponseCode();
-        if (responseCode == HttpsURLConnection.HTTP_OK) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-                String responseJsonPretty = gson.toJson(gson.fromJson(response.toString(), Object.class));
-                System.out.println(responseJsonPretty);
-            }
-        } else {
-            System.out.println("HTTP request failed with response code: " + responseCode);
-        }
+        printResponse(connection);
     }
 
     private static void getOwnerships(String scAddress) throws IOException {
@@ -258,21 +182,7 @@ public class Main {
             outputStream.write(gson.toJson(requestData).getBytes());
         }
 
-        int responseCode = connection.getResponseCode();
-        if (responseCode == HttpsURLConnection.HTTP_OK) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-                StringBuilder response = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-
-                String responseJsonPretty = gson.toJson(gson.fromJson(response.toString(), Object.class));
-                System.out.println(responseJsonPretty);
-            }
-        } else {
-            System.out.println("HTTP request failed with response code: " + responseCode);
-        }
+        printResponse(connection);
     }
 
     private static void getOwnerScAddresses() throws IOException {
@@ -282,6 +192,10 @@ public class Main {
         HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
 
+        printResponse(connection);
+    }
+
+    private static void printResponse(HttpsURLConnection connection) throws IOException {
         int responseCode = connection.getResponseCode();
         if (responseCode == HttpsURLConnection.HTTP_OK) {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
