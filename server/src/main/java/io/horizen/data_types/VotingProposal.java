@@ -1,6 +1,5 @@
 package io.horizen.data_types;
 
-import com.google.gson.Gson;
 import io.horizen.helpers.MyGsonManager;
 
 import java.util.Date;
@@ -47,8 +46,7 @@ public class VotingProposal {
     }
 
     public String toJson() {
-        Gson gson = MyGsonManager.getGson();
-        return gson.toJson(this);
+        return MyGsonManager.getGson().toJson(this);
     }
 
     public boolean isNull() {

@@ -26,11 +26,8 @@ public class Helper {
 
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
-
-        // Set the request headers
         connection.setRequestProperty("Content-Type", "application/json");
 
-        // Write the request body
         DataOutputStream outputStream = new DataOutputStream(connection.getOutputStream());
         outputStream.writeBytes(data);
         outputStream.flush();
@@ -58,16 +55,13 @@ public class Helper {
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
 
-        // Set basic authentication
         String auth = username + ":" + password;
         String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
         String authHeader = "Basic " + encodedAuth;
 
-        // Set the request headers
         connection.setRequestProperty("Authorization", authHeader);
         connection.setRequestProperty("Content-Type", "application/json");
 
-        // Write the request body
         DataOutputStream outputStream = new DataOutputStream(connection.getOutputStream());
         outputStream.writeBytes(data);
         outputStream.flush();
@@ -84,7 +78,6 @@ public class Helper {
         Path path = Paths.get(filePath);
         Files.createDirectories(path.getParent());
 
-        // Write the JSON data to the file
         try (FileWriter fileWriter = new FileWriter(filePath)) {
             fileWriter.write(jsonProposal);
         }

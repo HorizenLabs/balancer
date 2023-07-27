@@ -1,6 +1,5 @@
 package io.horizen.services.impl;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -12,9 +11,8 @@ import io.horizen.helpers.Helper;
 import io.horizen.helpers.MyGsonManager;
 import io.horizen.services.RosettaService;
 import io.horizen.services.SnapshotService;
+import spark.utils.IOUtils;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
@@ -39,23 +37,11 @@ public class RosettaServiceImpl implements RosettaService {
         String requestBody = "{\"network_identifier\": {\"blockchain\": \"Zen\", \"network\": \"" + settings.getNetwork() + "\"}}";
 
         try {
-            // Get the response code
             HttpURLConnection connection = Helper.sendRequest(url, requestBody);
-            int responseCode = connection.getResponseCode();
+            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                String response = IOUtils.toString(connection.getInputStream());
+                JsonObject responseObject = JsonParser.parseString(response).getAsJsonObject();
 
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                String line;
-                StringBuilder response = new StringBuilder();
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-                reader.close();
-
-                // Parse the JSON response
-                JsonObject responseObject = JsonParser.parseString(response.toString()).getAsJsonObject();
-
-                // Retrieve chain_height and best_block_hash
                 int chainHeight = responseObject
                         .getAsJsonObject("current_block_identifier")
                         .get("index")
@@ -97,10 +83,9 @@ public class RosettaServiceImpl implements RosettaService {
                 HttpURLConnection connection = Helper.sendRequest(settings.getRosettaUrl() + "account/balance", body);
 
                 if(connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    // Parse the JSON response
-                    JsonElement jsonElement = JsonParser.parseString(connection.getResponseMessage());
+                    String response = IOUtils.toString(connection.getInputStream());
+                    JsonElement jsonElement = JsonParser.parseString(response);
 
-                    // Retrieve the value from the parsed JSON
                     int amount = jsonElement
                             .getAsJsonObject()
                             .getAsJsonArray("balances")
@@ -117,12 +102,10 @@ public class RosettaServiceImpl implements RosettaService {
 
 
     private String buildRosettaRequestBody(String mcAddress) {
-        // Define ROSETTA_REQUEST_TEMPLATE
         JsonObject rosettaRequestTemplate = new JsonObject();
         rosettaRequestTemplate.addProperty("blockchain", "Zen");
         rosettaRequestTemplate.addProperty("network", settings.getNetwork());
 
-        // Create the request body
         JsonObject requestBody = new JsonObject();
         requestBody.add("network_identifier", rosettaRequestTemplate);
 
@@ -136,14 +119,6 @@ public class RosettaServiceImpl implements RosettaService {
         blockIdentifier.addProperty("hash", snapshotService.getActiveProposal().getBlockHash());
         requestBody.add("block_identifier", blockIdentifier);
 
-        // Print the outgoing request
-        System.out.println("Outgoing Request:");
-        System.out.println(requestBody);
-
-        // Create Gson instance
-        Gson gson = MyGsonManager.getGson();
-
-        // Convert the Java object to JSON string
-        return gson.toJson(requestBody);
+        return MyGsonManager.getGson().toJson(requestBody);
     }
 }

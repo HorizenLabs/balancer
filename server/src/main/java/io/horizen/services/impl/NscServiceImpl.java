@@ -18,9 +18,8 @@ import org.web3j.abi.datatypes.generated.Uint32;
 import org.web3j.crypto.Hash;
 import org.web3j.crypto.Keys;
 import org.web3j.utils.Numeric;
+import spark.utils.IOUtils;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -64,25 +63,10 @@ public class NscServiceImpl implements NscService {
             throw new Exception(connection.getResponseCode() + " " + connection.getResponseMessage());
         }
 
-        // Read the response body
-        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        StringBuilder response = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            response.append(line);
-        }
-        reader.close();
-
-        // Print the response body
-        System.out.println("Response Body: " + response);
-
-        // Parse the JSON response
-        JsonObject responseObject = JsonParser.parseString(response.toString()).getAsJsonObject();
-
-        // Get the result value
+        String response = IOUtils.toString(connection.getInputStream());
+        JsonObject responseObject = JsonParser.parseString(response).getAsJsonObject();
         String abiReturnValue = responseObject.get("result").getAsString();
 
-        // Remove the "0x" prefix
         if (abiReturnValue.startsWith("0x")) {
             abiReturnValue = abiReturnValue.substring(2);
         }
@@ -103,25 +87,10 @@ public class NscServiceImpl implements NscService {
             throw new Exception("Problem with getKeyOwnerScAddresses()");
         }
 
-        // Read the response body
-        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-        StringBuilder response = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            response.append(line);
-        }
-        reader.close();
-
-        // Print the response body
-        System.out.println("Response Body: " + response);
-
-        // Parse the JSON response
-        JsonObject responseObject = JsonParser.parseString(response.toString()).getAsJsonObject();
-
-        // Get the result value
+        String response = IOUtils.toString(connection.getInputStream());
+        JsonObject responseObject = JsonParser.parseString(response).getAsJsonObject();
         String abiReturnValue = responseObject.get("result").getAsString();
 
-        // Remove the "0x" prefix
         if (abiReturnValue.startsWith("0x"))
             abiReturnValue = abiReturnValue.substring(2);
 
@@ -200,7 +169,7 @@ public class NscServiceImpl implements NscService {
 
         // Create the params JSON object
         JsonObject paramsObject = new JsonObject();
-        paramsObject.addProperty("from", Constants.ethCallFromAddress);
+        paramsObject.addProperty("from", Constants.ETH_CALL_FROM_ADDRESS);
         paramsObject.addProperty("to", "0x0000000000000000000088888888888888888888");
         paramsObject.addProperty("value", "0x00");
         paramsObject.addProperty("gasLimit", "0x21000");

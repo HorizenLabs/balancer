@@ -182,7 +182,7 @@ public class Balancer {
         }
         if (snapshotService.getActiveProposal() == null) {
             int code = 305;
-            String description = "No proposal have been received at this point";
+            String description = "No proposal has been received at this point";
             String detail = "Proposal should be received before getting voting power";
             log.error("Error in getVotingPower - " + detail);
             return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
@@ -211,8 +211,7 @@ public class Balancer {
         JsonArray scoreArray = new JsonArray();
         JsonObject scoreObject = new JsonObject();
         scoreObject.addProperty("address", address);
-        scoreObject.addProperty("score", balance);
-        scoreObject.addProperty("decimal", 8);
+        scoreObject.addProperty("score", String.format("%.0f", balance)); // fix for outputting 123456789.0 as 1.23456789E8
         scoreArray.add(scoreObject);
         jsonObject.add("score", scoreArray);
 
@@ -253,7 +252,6 @@ public class Balancer {
         try {
             startDate = format.parse(start);
             endDate = format.parse(end);
-            System.out.println(startDate);
         } catch (ParseException ex) {
             int code = 304;
             String description = "Can not create proposal";
