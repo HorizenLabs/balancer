@@ -221,7 +221,6 @@ public class Main {
             return;
         }
 
-        // Command to execute
         String command = args[0];
         switch (command) {
             case "new_proposal":

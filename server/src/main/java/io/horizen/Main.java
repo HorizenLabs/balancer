@@ -97,7 +97,6 @@ public class Main {
         FileInputStream fis = new FileInputStream(configFilePath);
         properties.load(fis);
 
-        // Read the properties from the loaded configuration
         String nscUrl = properties.getProperty("nscUrl");
         String rosettaUrl = properties.getProperty("rosettaUrl");
         String network = properties.getProperty("network");
@@ -108,7 +107,6 @@ public class Main {
         String proposalJsonDataPath = properties.getProperty("proposalJsonDataPath");
         int serverPort = Integer.parseInt(properties.getProperty("port"));
 
-        // Create an instance of the Settings class with the loaded values
         return new Settings(
                 proposalJsonDataFileName,
                 proposalJsonDataPath,

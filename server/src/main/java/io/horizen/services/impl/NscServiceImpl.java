@@ -97,8 +97,6 @@ public class NscServiceImpl implements NscService {
         return getOwnerScAddrFromAbi(abiReturnValue);
     }
 
-
-
     private Map<String, List<String>> getKeyOwnershipFromAbi(String abiReturnValue) {
         int startDataOffset = TypeDecoder.decode(abiReturnValue.substring(0,64), Uint32.class).getValue().intValue() * 2;
         int endDataOffset = startDataOffset + 64;

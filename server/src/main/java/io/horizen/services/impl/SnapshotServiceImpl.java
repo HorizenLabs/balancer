@@ -21,7 +21,7 @@ public class SnapshotServiceImpl implements SnapshotService {
     private final NscService nscService;
     private final Settings settings;
 
-    @Inject // This annotation is important for Guice to perform injection
+    @Inject
     public SnapshotServiceImpl(NscService nscService, Settings settings) {
         this.nscService = nscService;
         this.settings = settings;

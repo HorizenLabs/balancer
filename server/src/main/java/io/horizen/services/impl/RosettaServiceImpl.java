@@ -22,7 +22,7 @@ public class RosettaServiceImpl implements RosettaService {
     private final Settings settings;
 
 
-    @Inject // This annotation is important for Guice to perform injection
+    @Inject
     public RosettaServiceImpl(SnapshotService snapshotService, Settings settings) {
         this.snapshotService = snapshotService;
         this.settings = settings;

@@ -206,7 +206,6 @@ public class Balancer {
             return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
         }
 
-        // Create the Java object representing the JSON structure
         JsonObject jsonObject = new JsonObject();
         JsonArray scoreArray = new JsonArray();
         JsonObject scoreObject = new JsonObject();
@@ -234,7 +233,6 @@ public class Balancer {
         String proposalId;
         try {
             JsonObject jsonObject = gson.fromJson(req.body(), JsonObject.class);
-
             String body = jsonObject.get("Body").getAsString();
             start = extractValueFromBody(body, "Start");
             end = extractValueFromBody(body, "End");
