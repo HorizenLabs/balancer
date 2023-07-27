@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 
 import javax.net.ssl.*;
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
@@ -13,7 +14,7 @@ import java.util.Map;
 import java.util.Random;
 
 public class Main {
-    private static final String LOCAL_HTTP_SERVER_URL = "https://localhost:8080/";
+    private static final String LOCAL_HTTP_SERVER_URL = "https://localhost:8080/"; // change if https not used
     private static final String REMOTE_HTTP_SERVER_URL = "http://zendao-tn-1.de.horizenlabs.io:5000/";
 
     private static final String HTTP_SERVER_URL = LOCAL_HTTP_SERVER_URL;
@@ -62,7 +63,7 @@ public class Main {
         System.out.println("Calling new proposal with data: " + CREATE_PROPOSAL_MOCK);
 
         URL url = new URL(HTTP_SERVER_URL + "api/v1/createProposal");
-        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        HttpURLConnection connection = HTTP_SERVER_URL.contains("https") ? (HttpsURLConnection) url.openConnection() : (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
@@ -78,7 +79,7 @@ public class Main {
         System.out.println("Calling get voting power with data: " + GET_VOTING_POWER_MOCK);
 
         URL url = new URL(HTTP_SERVER_URL + "api/v1/getVotingPower");
-        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        HttpURLConnection connection = HTTP_SERVER_URL.contains("https") ? (HttpsURLConnection) url.openConnection() : (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
@@ -93,7 +94,7 @@ public class Main {
         System.out.println("Calling get voting power with data: " + GET_VOTING_POWER_MOCK);
 
         URL url = new URL(HTTP_SERVER_URL + "api/v1/getVotingPower");
-        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        HttpURLConnection connection = HTTP_SERVER_URL.contains("https") ? (HttpsURLConnection) url.openConnection() : (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
         connection.setRequestProperty("Content-Type", "application/json");
 
@@ -119,7 +120,7 @@ public class Main {
         String fullUrl = baseUrl + "?" + queryString;
 
         URL url = new URL(fullUrl);
-        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        HttpURLConnection connection = HTTP_SERVER_URL.contains("https") ? (HttpsURLConnection) url.openConnection() : (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
 
         printResponse(connection);
@@ -138,7 +139,7 @@ public class Main {
         System.out.println("Calling add ownership with data: " + data);
 
         URL url = new URL(HTTP_SERVER_URL + "api/v1/addOwnership");
-        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        HttpURLConnection connection = HTTP_SERVER_URL.contains("https") ? (HttpsURLConnection) url.openConnection() : (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
@@ -154,7 +155,7 @@ public class Main {
         System.out.println("Calling get proposals");
 
         URL url = new URL(HTTP_SERVER_URL + "api/v1/getProposals");
-        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        HttpURLConnection connection = HTTP_SERVER_URL.contains("https") ? (HttpsURLConnection) url.openConnection() : (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
@@ -173,7 +174,7 @@ public class Main {
         requestData.put("scAddress", scAddress);
 
         URL url = new URL(HTTP_SERVER_URL + "api/v1/getOwnerships");
-        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        HttpURLConnection connection = HTTP_SERVER_URL.contains("https") ? (HttpsURLConnection) url.openConnection() : (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setRequestProperty("Content-Type", "application/json");
         connection.setDoOutput(true);
@@ -189,15 +190,15 @@ public class Main {
         System.out.println("Calling get owner sc addresses");
 
         URL url = new URL(HTTP_SERVER_URL + "api/v1/getOwnerScAddresses");
-        HttpsURLConnection connection = (HttpsURLConnection) url.openConnection();
+        HttpURLConnection connection = HTTP_SERVER_URL.contains("https") ? (HttpsURLConnection) url.openConnection() : (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
 
         printResponse(connection);
     }
 
-    private static void printResponse(HttpsURLConnection connection) throws IOException {
+    private static void printResponse(HttpURLConnection connection) throws IOException {
         int responseCode = connection.getResponseCode();
-        if (responseCode == HttpsURLConnection.HTTP_OK) {
+        if (responseCode == HttpURLConnection.HTTP_OK) {
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
                 StringBuilder response = new StringBuilder();
                 String line;
@@ -214,7 +215,8 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
-        setupSSL();
+        if (HTTP_SERVER_URL.contains("https"))
+            setupSSL();
 
         if (args.length == 0) {
             System.out.println("Command not specified!");
