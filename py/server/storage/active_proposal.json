@@ -1,10 +1,10 @@
 {
     "Proposal": {
-        "ID": "proposal/0xeca96e839070fff6f6c5140fcf4939779794feb6028edecc03d5f518133c6c",
+        "ID": "proposal/0xeca96e839070fff6f6c5140fcf4939779794feb6028edecc03d5f518133c71",
         "block_height": 100,
         "block_hash": "000439739cac7736282169bb10d368123ca553c45ea6d4509d809537cd31aa0d",
-        "from": "2023-04-18 13:40:00",
-        "to": "2023-04-18 13:45:00",
+        "from": "None",
+        "to": "2023-07-31 13:00:00",
         "Author": "0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959"
     }
 }

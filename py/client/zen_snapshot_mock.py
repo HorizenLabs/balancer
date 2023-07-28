@@ -13,19 +13,21 @@ urllib3.disable_warnings(urllib3.exceptions.SubjectAltNameWarning)
 LOCAL_HTTP_SERVER_URL = "https://localhost:5000/"
 REMOTE_HTTP_SERVER_URL = "https://zendao-tn-1.de.horizenlabs.io:5000/"
 
-#HTTP_SERVER_URL = LOCAL_HTTP_SERVER_URL
-HTTP_SERVER_URL = REMOTE_HTTP_SERVER_URL
+HTTP_SERVER_URL = LOCAL_HTTP_SERVER_URL
+#HTTP_SERVER_URL = REMOTE_HTTP_SERVER_URL
 
 # if the server is on https we should use a cert
 #---
 # for local dev and self-signed cert we use the same cert as server
-#VERIFY_PARAM ='/tmp/server.crt'
+VERIFY_PARAM ='/tmp/server.crt'
 # if https we get a InsecureRequestWarning
 #VERIFY_PARAM=False
 #---
 # valid cert
-VERIFY_PARAM=True
+#VERIFY_PARAM=True
 
+'''
+# Old format
 CREATE_PROPOSAL_MOCK = {
     "Body": "Start: 18 Apr 23 13:40 UTC, End: 18 Apr 23 13:45 UTC, Author: 0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959",
     "ProposalEvent": "proposal/created",
@@ -33,6 +35,15 @@ CREATE_PROPOSAL_MOCK = {
     "ProposalID": "proposal/0xeca96e839070fff6f6c5140fcf4939779794feb6028edecc03d5f518133cabc5",
     "ProposalSpace": "victorbibiano.eth"
 }
+'''
+CREATE_PROPOSAL_MOCK = {
+      "Body": "HAL new format of notification\nProposal Created\nStarts on: 28 Jul 23 13:27 UTC\nEnds on: 31 Jul 23 13:27 UTC\nAuthor: 0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959",
+      "ProposalID": "proposal/0x6e142d2c78802c3e56194fe7d4e6f49b760b7dea26d379d84e417e6c0ad09009",
+      "ProposalEvent": "proposal/created",
+      "ProposalSpace": "victorbibiano.eth",
+      "ProposalExpire": 0
+    }
+
 GET_VOTING_POWER_MOCK = {
     'options': {
         'url': HTTP_SERVER_URL+'api/v1/getVotingPower',

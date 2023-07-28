@@ -194,6 +194,6 @@ def api_server():
 
 
 if __name__ == '__main__':
-    # Start http server
+    # Start http(s) server
     t = threading.Thread(target=api_server, args=())
     t.start()
