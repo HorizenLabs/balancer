@@ -32,19 +32,20 @@ def check_sc_address(sc_address):
 def hex_str_to_bytes(hex_str):
     return unhexlify(hex_str.encode('ascii'))
 
+
 def read_proposal_from_file():
-    file_name = PROPOSAL_JSON_DATA_PATH+PROPOSAL_JSON_DATA_FILE_NAME
+    file_name = PROPOSAL_JSON_DATA_PATH + PROPOSAL_JSON_DATA_FILE_NAME
 
     json_object = None
     try:
         with open(file_name, 'r') as openfile:
             json_object = json.load(openfile)
-            #print(json_object)
+            # print(json_object)
 
     except FileNotFoundError as e:
         print("Warning: " + str(e))
     except JSONDecodeError as e:
-        print("Warning: could not decode file ["+file_name+"]: " + str(e))
+        print("Error: could not decode file [" + file_name + "]: " + str(e))
 
     return json_object
 
@@ -54,8 +55,7 @@ def write_proposal_to_file(prop):
 
     # Serializing json
     json_object = json.dumps(prop.to_json(), indent=4)
-    #print(json_object)
-
+    # print(json_object)
 
     try:
         with open(file_name, 'w') as outfile:
@@ -64,5 +64,3 @@ def write_proposal_to_file(prop):
         print("Warning: " + str(e))
     except Exception as e:
         print("Error: " + str(e))
-
-

@@ -4,7 +4,7 @@ import string
 from threading import Lock
 
 import base58
-from .definitions import MOCK_MC_ADDRESS_MAP, mock_nsc, MOCK_OWNER_SC_ADDR_LIST
+from .definitions import MOCK_MC_ADDRESS_MAP, MOCK_NSC, MOCK_OWNER_SC_ADDR_LIST
 from .nsc_methods import get_nsc_ownerships, get_nsc_owner_sc_addresses
 from .proposal import VotingProposal
 from .util_methods import write_proposal_to_file
@@ -150,14 +150,14 @@ def add_ownership_entry(data_json):
 
 
 def get_mc_address_map(sc_address=None):
-    if mock_nsc:
+    if MOCK_NSC:
         return MOCK_MC_ADDRESS_MAP
     else:
         return get_nsc_ownerships(sc_address)
 
 
 def get_owner_sc_addr_list():
-    if mock_nsc:
+    if MOCK_NSC:
         return MOCK_OWNER_SC_ADDR_LIST
     else:
         return get_nsc_owner_sc_addresses()

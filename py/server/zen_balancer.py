@@ -5,9 +5,8 @@ from modules.snapshot_methods import add_ownership_entry, \
     get_mc_address_map, store_proposal_data, get_active_proposal, \
     proposal_dict, get_owner_sc_addr_list, init_active_proposal
 from modules.rosetta_methods import get_chain_tip, get_address_balance
-from modules.definitions import mock_nsc, MOCK_MC_ADDRESS_MAP, MOCK_OWNER_SC_ADDR_LIST, check_mocks
+from modules.definitions import MOCK_NSC, MOCK_MC_ADDRESS_MAP, MOCK_OWNER_SC_ADDR_LIST, check_mocks
 from modules.util_methods import print_incoming, print_outgoing, read_proposal_from_file
-
 
 # see below for proxy usage
 # from werkzeug.middleware.proxy_fix import ProxyFix
@@ -21,14 +20,14 @@ def api_server():
 
     @app.route('/api/v1/getOwnerships', methods=['POST'])
     def get_ownerships():
-        input = json.loads(request.data)
+        cmd_input = json.loads(request.data)
 
-        print_incoming("BalancerApiServer", "/api/v1/getOwnerships", input)
+        print_incoming("BalancerApiServer", "/api/v1/getOwnerships", cmd_input)
 
-        if mock_nsc:
+        if MOCK_NSC:
             ret = MOCK_MC_ADDRESS_MAP
         else:
-            sc_address = input['scAddress']
+            sc_address = cmd_input['scAddress']
             try:
                 ret = get_mc_address_map(sc_address)
             except Exception as e:
@@ -46,11 +45,11 @@ def api_server():
 
     @app.route('/api/v1/getOwnerScAddresses', methods=['POST'])
     def get_owner_sc_addresses():
-        input = json.loads(request.data)
+        cmd_input = json.loads(request.data)
 
-        print_incoming("BalancerApiServer", "/api/v1/getOwnerScAddresses", input)
+        print_incoming("BalancerApiServer", "/api/v1/getOwnerScAddresses", cmd_input)
 
-        if mock_nsc:
+        if MOCK_NSC:
             ret = MOCK_OWNER_SC_ADDR_LIST
         else:
             try:
@@ -70,10 +69,10 @@ def api_server():
 
     @app.route('/api/v1/getProposals', methods=['POST'])
     def get_proposals():
-        input = json.loads(request.data)
+        cmd_input = json.loads(request.data)
 
-        print_incoming("BalancerApiServer", "/api/v1/getProposals", input)
-        response = [prop.to_json() for prop in proposal_dict.values()]
+        print_incoming("BalancerApiServer", "/api/v1/getProposals", cmd_input)
+        response = [proposal.to_json() for proposal in proposal_dict.values()]
         print_outgoing("BalancerApiServer", "/api/v1/getProposals", response)
 
         return json.dumps(response)
@@ -148,7 +147,7 @@ def api_server():
 
         print_incoming("BalancerApiServer", "/api/v1/addOwnership", proposal)
 
-        if mock_nsc:
+        if MOCK_NSC:
             ret = {
                 'result': add_ownership_entry(proposal),
                 'ownerships': MOCK_MC_ADDRESS_MAP,

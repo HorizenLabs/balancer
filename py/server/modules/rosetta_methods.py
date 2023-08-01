@@ -2,7 +2,7 @@ import json
 import requests
 
 from .snapshot_methods import get_mc_address_map, get_active_proposal
-from .definitions import mock_rosetta, MOCK_ROSETTA_GET_BALANCE_RESP, ROSETTA_REQUEST_TEMPLATE, ROSETTA_URL
+from .definitions import MOCK_ROSETTA, MOCK_ROSETTA_GET_BALANCE_RESP, ROSETTA_REQUEST_TEMPLATE, ROSETTA_URL
 from .util_methods import print_outgoing, print_incoming
 
 
@@ -33,7 +33,7 @@ def get_address_balance(sc_address):
     if sc_address in mc_address_map:
         mc_addresses = mc_address_map[sc_address]
 
-        if mock_rosetta:
+        if MOCK_ROSETTA:
             # don't go on rosetta, just mock it
             print("-------------MOCK ROSETTA RESPONSE------------")
             return MOCK_ROSETTA_GET_BALANCE_RESP
@@ -66,7 +66,7 @@ def get_address_balance(sc_address):
 def get_chain_tip():
     # Retrieve current MC tip
 
-    if mock_rosetta:
+    if MOCK_ROSETTA:
         return 100, "000439739cac7736282169bb10d368123ca553c45ea6d4509d809537cd31aa0d"
 
     # Call Rosetta endpoint /network/status
