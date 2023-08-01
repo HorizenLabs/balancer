@@ -72,7 +72,7 @@ def check_mocks():
 
     if MOCK_NSC:
         print("##################################")
-        print("##    MOCKING ROSETTA MODULE    ##")
+        print("##    MOCKING NSC MODULE        ##")
         print("##################################")
 
 

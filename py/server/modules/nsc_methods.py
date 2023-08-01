@@ -45,12 +45,9 @@ def get_nsc_ownerships(sc_address=None):
         ],
         "id": 1
     }
-    print_outgoing("NSC", "/ethv1/eth_call (getKeysOwnership)", request_body)
-    response = requests.post(NSC_URL + "ethv1", json.dumps(request_body), auth=('user', 'Horizen'))
-    print_incoming("NSC", "/ethv1/eth_call (getKeysOwnership)", response.json())
-    abi_return_value = remove_0x_prefix(response.json()['result'])
-    ret = get_key_ownership_from_abi(abi_return_value)
-    return ret
+
+    abi_return_value = handle_response_from_req(request_body, 'getKeysOwnership')
+    return get_key_ownership_from_abi(abi_return_value)
 
 
 # invokes eth_call RPC
@@ -74,13 +71,16 @@ def get_nsc_owner_sc_addresses():
         ],
         "id": 1
     }
-    print_outgoing("NSC", "/ethv1/eth_call (getKeyOwnerScAddresses)", request_body)
-    response = requests.post(NSC_URL + "ethv1", json.dumps(request_body), auth=('user', 'Horizen'))
-    print_incoming("NSC", "/ethv1/eth_call (getKeyOwnerScAddresses)", response.json())
-    abi_return_value = remove_0x_prefix(response.json()['result'])
-    ret = get_owner_sc_addr_from_abi(abi_return_value)
-    return ret
 
+    abi_return_value = handle_response_from_req(request_body, 'getKeyOwnerScAddresses')
+    return get_owner_sc_addr_from_abi(abi_return_value)
+
+def handle_response_from_req(request_body, op_tag):
+    print_outgoing("NSC", "/ethv1/eth_call (" + op_tag + ")", request_body)
+    response = requests.post(NSC_URL + "ethv1", json.dumps(request_body), auth=('user', 'Horizen'))
+    print_incoming("NSC", "/ethv1/eth_call (" + op_tag + ")", response.json())
+    abi_return_value = remove_0x_prefix(response.json()['result'])
+    return abi_return_value
 
 def get_key_ownership_from_abi(abi_return_value):
     # the location of the data part of the first (the only one in this case) parameter (dynamic type), measured in bytes

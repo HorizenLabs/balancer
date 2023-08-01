@@ -1,7 +1,7 @@
 import threading
 from flask import Flask, request, json
 
-from modules.snapshot_methods import add_ownership_entry, \
+from modules.snapshot_methods import add_mock_ownership_entry, \
     get_mc_address_map, store_proposal_data, get_active_proposal, \
     proposal_dict, get_owner_sc_addr_list, init_active_proposal
 from modules.rosetta_methods import get_chain_tip, get_address_balance
@@ -50,19 +50,16 @@ def api_server():
 
         print_incoming("BalancerApiServer", "/api/v1/getOwnerScAddresses", cmd_input)
 
-        if MOCK_NSC:
-            ret = MOCK_OWNER_SC_ADDR_LIST
-        else:
-            try:
-                ret = get_owner_sc_addr_list()
-            except Exception as e:
-                ret = {
-                    "error": {
-                        "code": 302,
-                        "description": "Could not get owner sc addresses",
-                        "detail": "An exception occurred: " + str(e)
-                    }
+        try:
+            ret = get_owner_sc_addr_list()
+        except Exception as e:
+            ret = {
+                "error": {
+                    "code": 302,
+                    "description": "Could not get owner sc addresses",
+                    "detail": "An exception occurred: " + str(e)
                 }
+            }
 
         print_outgoing("BalancerApiServer", "/api/v1/getOwnerScAddresses", ret)
 
@@ -117,24 +114,14 @@ def api_server():
         content = request.args
         print_incoming("BalancerApiServer", "/api/v1/getVotingPower", content)
 
-        if get_active_proposal().is_null():
-            err = {
-                "error": {
-                    "code": 305,
-                    "description": "No proposal have been received at this point",
-                    "detail": "Proposal should be received before getting voting power"
-                }
-            }
-            print_outgoing("BalancerApiServer", "/api/v1/getVotingPower", err)
-            return err
-
         print_log(
             "getting voting power for active proposal:\n" + json.dumps(get_active_proposal().to_json(), indent=4))
 
         # Parse requested address. In GET this is one address actually
         requested_address = content["addresses"]
 
-        # Retrieve balance for the owned MC addresses
+        # Retrieve balance for the owned MC addresses at the height/hash block specified in the active proposal.
+        # This also checks if proposal have been created
         response = get_address_balance(requested_address)
 
         # Answer back with the balance
@@ -150,7 +137,7 @@ def api_server():
 
         if MOCK_NSC:
             ret = {
-                'result': add_ownership_entry(proposal),
+                'result': add_mock_ownership_entry(proposal),
                 'ownerships': MOCK_MC_ADDRESS_MAP,
             }
         else:
@@ -158,8 +145,7 @@ def api_server():
                 "error": {
                     "code": 306,
                     "description": "Could not add ownership",
-                    "detail": "Method not supported with real native smart contract. Pls set \'mock_nsc=true\'"
-                              " in balancer"
+                    "detail": "Method not supported with real native smart contract. Pls set \'MOCK_NSC=true\' in env"
                 }
             }
         print_outgoing("BalancerApiServer", "/api/v1/addOwnership", ret)

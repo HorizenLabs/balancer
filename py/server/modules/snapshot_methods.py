@@ -90,7 +90,7 @@ def init_active_proposal(deserialized_proposal_dict):
 
 
 # used only when mocking nsc
-def add_ownership_entry(data_json):
+def add_mock_ownership_entry(data_json):
     try:
         new_owner = data_json['owner']
         new_addr = data_json['address']
@@ -127,11 +127,7 @@ def add_ownership_entry(data_json):
                 # this is actually a reference
                 addresses = MOCK_MC_ADDRESS_MAP[data_json['owner']]
                 found = False
-                for entry in addresses:
-                    if entry == new_addr:
-                        found = True
-                        break
-                if not found:
+                if data_json['address'] not in addresses:
                     addresses.append(data_json['address'])
                     response = {"status": "Ok"}
                 else:
