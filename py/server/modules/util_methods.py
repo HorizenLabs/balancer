@@ -12,6 +12,7 @@ logging.basicConfig(
     format='[%(asctime)s] %(levelname)s:\n%(message)s'
 )
 
+
 def print_incoming(component_tag, endpoint_tag, content):
     logging.info("<<<< " + component_tag + " " + endpoint_tag + " received:\n" + json.dumps(content, indent=4))
 
@@ -19,8 +20,10 @@ def print_incoming(component_tag, endpoint_tag, content):
 def print_outgoing(component_tag, endpoint_tag, content):
     logging.info(">>>> " + component_tag + " " + endpoint_tag + " sending:\n" + json.dumps(content, indent=4))
 
+
 def print_log(msg):
     logging.info(msg)
+
 
 def check_sc_address(sc_address):
     sc_address = remove_0x_prefix(sc_address)
@@ -43,7 +46,6 @@ def read_proposal_from_file():
     try:
         with open(file_name, 'r') as openfile:
             json_object = json.load(openfile)
-            # print(json_object)
 
     except FileNotFoundError as e:
         logging.warning("Warning: " + str(e))
@@ -58,7 +60,6 @@ def write_proposal_to_file(prop):
 
     # Serializing json
     json_object = json.dumps(prop.to_json(), indent=4)
-    # print(json_object)
 
     try:
         with open(file_name, 'w') as outfile:

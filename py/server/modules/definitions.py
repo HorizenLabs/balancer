@@ -6,9 +6,8 @@ def get_project_root() -> Path:
     return Path(__file__).parent.parent
 
 
-# Native smart contract is reachable via this end points
+# Native smart contract is reachable via this end point
 NSC_URL = str(os.getenv("NSC_URL", "http://zendao-tn-1.de.horizenlabs.io:8200/"))
-# NSC_URL = "http://localhost:8200/"
 
 # This is the address which is used for calling eth_call which invokes the NSC. Some fund must be stored there
 # otherwise the call fails (no sufficient balance)
@@ -17,8 +16,8 @@ ETH_CALL_FROM_ADDRESS = str(os.getenv("ETH_CALL_FROM_ADDRESS", "0x00c8f107a09cd4
 # A rosetta instance is running locally (if not mocked)
 ROSETTA_URL = str(os.getenv("ROSETTA_URL", "http://localhost:8080/"))
 
-NETWORK = str(os.getenv("NETWORK", "test"))
-# NETWORK = "main"
+# The network type which rosetta is running on. Can be 'test' or 'main'
+ROSETTA_NETWORK_TYPE = str(os.getenv("ROSETTA_NETWORK_TYPE", "test"))
 
 # The json file where the active proposal is stored
 __PROPOSAL_JSON_DATA_PATH_DEFAULT = str(get_project_root()) + "/"
@@ -38,11 +37,13 @@ MOCK_ROSETTA_GET_BALANCE_RESP = {
     "score": [
         {
             "address": "0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959",
-            "score": 123456789,
-            "decimal": 8
+            "score": 123456789
         }
     ]
 }
+
+MOCK_ROSETTA_BLOCK_HASH = "000439739cac7736282169bb10d368123ca553c45ea6d4509d809537cd31aa0d"
+MOCK_ROSETTA_BLOCK_HEIGHT = 100
 
 MOCK_MC_ADDRESS_MAP = {
     "0x72661045bA9483EDD3feDe4A73688605b51d40c0": [
@@ -76,11 +77,21 @@ def check_mocks():
         print("##################################")
 
 
-# these definitions should not be modified
-# -------------------------------------------------------------------
-ROSETTA_REQUEST_TEMPLATE = {
+# these definitions are used for querying rosetta component and should not be modified
+# ------------------------------------------------------------------------------------
+ROSETTA_REQUEST_NETWORK_STATUS_TEMPLATE = {
     "network_identifier": {
         "blockchain": "Zen",
-        "network": NETWORK
+        "network": ROSETTA_NETWORK_TYPE
+    }
+}
+
+ROSETTA_REQUEST_BLOCK_TEMPLATE = {
+    "network_identifier": {
+        "blockchain": "Zen",
+        "network": ROSETTA_NETWORK_TYPE
+    },
+    "block_identifier": {
+        "index": 0
     }
 }

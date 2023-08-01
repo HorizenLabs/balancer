@@ -4,13 +4,16 @@ from flask import Flask, request, json
 from modules.snapshot_methods import add_mock_ownership_entry, \
     get_mc_address_map, store_proposal_data, get_active_proposal, \
     proposal_dict, get_owner_sc_addr_list, init_active_proposal
-from modules.rosetta_methods import get_chain_tip, get_address_balance
-from modules.definitions import MOCK_NSC, MOCK_MC_ADDRESS_MAP, MOCK_OWNER_SC_ADDR_LIST, check_mocks
+from modules.rosetta_methods import get_mainchain_tip, get_address_balance
+from modules.definitions import MOCK_NSC, MOCK_MC_ADDRESS_MAP, check_mocks
 from modules.util_methods import print_incoming, print_outgoing, read_proposal_from_file, print_log
 
 
 # see below for proxy usage
 # from werkzeug.middleware.proxy_fix import ProxyFix
+
+from modules.balancerError import GetOwnershipError, GetOwnerScAddressesError, \
+    CreateProposalError, AddOwnershipError
 
 
 def api_server():
@@ -32,13 +35,7 @@ def api_server():
             try:
                 ret = get_mc_address_map(sc_address)
             except Exception as e:
-                ret = {
-                    "error": {
-                        "code": 301,
-                        "description": "Could not get ownership for sc address:" + sc_address,
-                        "detail": "An exception occurred: " + str(e)
-                    }
-                }
+                ret = GetOwnershipError("sc address: " + sc_address + " - Exception: " + str(e)).get()
 
         print_outgoing("BalancerApiServer", "/api/v1/getOwnerships", ret)
 
@@ -53,13 +50,7 @@ def api_server():
         try:
             ret = get_owner_sc_addr_list()
         except Exception as e:
-            ret = {
-                "error": {
-                    "code": 302,
-                    "description": "Could not get owner sc addresses",
-                    "detail": "An exception occurred: " + str(e)
-                }
-            }
+            ret = GetOwnerScAddressesError("An exception occurred: " + str(e)).get()
 
         print_outgoing("BalancerApiServer", "/api/v1/getOwnerScAddresses", ret)
 
@@ -82,26 +73,14 @@ def api_server():
         print_incoming("BalancerApiServer", "/api/v1/createProposal", proposal)
         try:
             # update MC chain tip. This block will be used when retrieving balances from Rosetta
-            (chain_tip_height, chain_tip_hash) = get_chain_tip()
+            (chain_tip_height, chain_tip_hash) = get_mainchain_tip()
         except Exception as e:
-            response = {
-                "error": {
-                    "code": 303,
-                    "description": "Can not create proposal",
-                    "detail": "can not determine main chain best block: " + str(e)
-                }
-            }
+            response = CreateProposalError("Can not determine main chain best block: " + str(e)).get()
         else:
             try:
                 store_proposal_data(proposal, chain_tip_height, chain_tip_hash)
             except Exception as e:
-                response = {
-                    "error": {
-                        "code": 304,
-                        "description": "Can not create proposal",
-                        "detail": "proposal data format not expected: " + str(e)
-                    }
-                }
+                response = CreateProposalError("Proposal data format not expected: " + str(e)).get()
             else:
                 response = {"status": "Ok"}
 
@@ -141,13 +120,9 @@ def api_server():
                 'ownerships': MOCK_MC_ADDRESS_MAP,
             }
         else:
-            ret = {
-                "error": {
-                    "code": 306,
-                    "description": "Could not add ownership",
-                    "detail": "Method not supported with real native smart contract. Pls set \'MOCK_NSC=true\' in env"
-                }
-            }
+            ret = AddOwnershipError(
+                "Method not supported with real native smart contract. Pls set \'MOCK_NSC=true\' in env").get()
+
         print_outgoing("BalancerApiServer", "/api/v1/addOwnership", ret)
 
         return json.dumps(ret)
@@ -168,13 +143,13 @@ def api_server():
     # ---------------------
     # localhost (cert generated via openssl, see:
     # https://kracekumar.com/post/54437887454/ssl-for-flask-local-development/
-    # context = ('/tmp/server.crt', '/tmp/server.key')  # certificate and key files
+    context = ('/tmp/server.crt', '/tmp/server.key')  # certificate and key files
 
     # official server (certificates generated there via certbot)
     # $ export FQDN="zendao-tn-1.de.horizenlabs.io"
     # $ sudo certbot certonly  -n --agree-tos --register-unsafely-without-email --standalone -d $FQDN
-    context = ('/etc/letsencrypt/archive/zendao-tn-1.de.horizenlabs.io/fullchain1.pem',
-               '/etc/letsencrypt/archive/zendao-tn-1.de.horizenlabs.io/privkey1.pem')
+    # context = ('/etc/letsencrypt/archive/zendao-tn-1.de.horizenlabs.io/fullchain1.pem',
+    #            '/etc/letsencrypt/archive/zendao-tn-1.de.horizenlabs.io/privkey1.pem')
 
     app.run(host="0.0.0.0", port=5000, ssl_context=context)
 

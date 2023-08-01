@@ -4,6 +4,8 @@ import string
 from threading import Lock
 
 import base58
+
+from .balancerError import AddOwnershipError
 from .definitions import MOCK_MC_ADDRESS_MAP, MOCK_NSC, MOCK_OWNER_SC_ADDR_LIST
 from .nsc_methods import get_nsc_ownerships, get_nsc_owner_sc_addresses
 from .proposal import VotingProposal
@@ -70,12 +72,14 @@ def store_proposal_data(proposal_json, chain_tip_height, chain_tip_hash):
 def init_active_proposal(deserialized_proposal_dict):
     global active_proposal
     with mutex:
-        prop_id = deserialized_proposal_dict['Proposal']['ID']
-        from_time = deserialized_proposal_dict['Proposal']['from']
-        to_time = deserialized_proposal_dict['Proposal']['to']
-        author = deserialized_proposal_dict['Proposal']['Author']
-        chain_tip_height = deserialized_proposal_dict['Proposal']['block_height']
-        chain_tip_hash = deserialized_proposal_dict['Proposal']['block_hash']
+        proposal = deserialized_proposal_dict['Proposal']
+
+        prop_id = proposal['ID']
+        from_time = proposal['from']
+        to_time = proposal['to']
+        author = proposal['Author']
+        chain_tip_height = proposal['block_height']
+        chain_tip_hash = proposal['block_hash']
 
         prop = VotingProposal(
             in_id=prop_id,
@@ -97,47 +101,22 @@ def add_mock_ownership_entry(data_json):
         base58.b58decode_check(new_addr)
 
     except KeyError as e:
-        response = {
-            "error": {
-                "code": 101,
-                "description": "Can not add ownership",
-                "detail": "invalid json request data, could not find field: " + str(e)
-            }
-        }
+        response = AddOwnershipError("Invalid json request data, could not find field: " + str(e)).get()
     except ValueError as e:
-        response = {
-            "error": {
-                "code": 102,
-                "description": "Can not add ownership",
-                "detail": "address not valid: " + str(e)
-            }
-        }
+        response = AddOwnershipError("Address not valid: " + str(e)).get()
     else:
         if len(new_owner) != 42 or not all(c in string.hexdigits for c in new_owner[2:]):
-            response = {
-                "error": {
-                    "code": 103,
-                    "description": "Can not add ownership",
-                    "detail": "Invalid owner string length != 42 or not an hex string"
-                }
-            }
+            response = AddOwnershipError("Invalid owner string length != 42 or not an hex string").get()
         else:
 
             if new_owner in MOCK_MC_ADDRESS_MAP.keys():
                 # this is actually a reference
                 addresses = MOCK_MC_ADDRESS_MAP[data_json['owner']]
-                found = False
                 if data_json['address'] not in addresses:
                     addresses.append(data_json['address'])
                     response = {"status": "Ok"}
                 else:
-                    response = {
-                        "error": {
-                            "code": 104,
-                            "description": "Can not add ownership",
-                            "detail": "Ownership already set"
-                        }
-                    }
+                    response = AddOwnershipError("Ownership already set").get()
             else:
                 MOCK_MC_ADDRESS_MAP[new_owner] = [new_addr]
                 response = {"status": "Ok"}
