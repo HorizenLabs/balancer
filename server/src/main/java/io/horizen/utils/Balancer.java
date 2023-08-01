@@ -147,19 +147,15 @@ public class Balancer {
         res.type("application/json");
         log.info("getOwnerScAddresses request");
 
-        if (settings.getMockNsc())
-            ret = Constants.mockOwnerScAddrList;
-        else {
-            try {
-                ret = snapshotService.getOwnerScAddrList();
-            }
-            catch (Exception ex) {
-                int code = 302;
-                String description = "Could not get owner sc addresses";
-                String detail = "An exception occurred: " + ex;
-                log.error("Error in getOwnerScAddresses " + ex);
-                return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
-            }
+        try {
+            ret = snapshotService.getOwnerScAddrList();
+        }
+        catch (Exception ex) {
+            int code = 302;
+            String description = "Could not get owner sc addresses";
+            String detail = "An exception occurred: " + ex;
+            log.error("Error in getOwnerScAddresses " + ex);
+            return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
         }
 
         log.info("getOwnerScAddresses response with data " + ret);
