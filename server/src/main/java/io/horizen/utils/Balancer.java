@@ -234,9 +234,9 @@ public class Balancer {
         try {
             JsonObject jsonObject = gson.fromJson(req.body(), JsonObject.class);
             String body = jsonObject.get("Body").getAsString();
-            start = extractValueFromBody(body, "Start");
-            end = extractValueFromBody(body, "End");
-            author = extractValueFromBody(body, "Author");
+            start = extractValueFromBody(body, "Starts on:");
+            end = extractValueFromBody(body, "Ends on:");
+            author = extractValueFromBody(body, "Author:");
             proposalId = jsonObject.get("ProposalID").getAsString();
         } catch (Exception ex) {
             int code = 304;
@@ -285,14 +285,18 @@ public class Balancer {
         return gson.toJson(statusObject);
     }
 
-    private static String extractValueFromBody(String body, String key) {
-        String prefix = key + ": ";
-        int startIndex = body.indexOf(prefix);
-        int endIndex = body.indexOf(",", startIndex);
-        if (endIndex == -1) {
-            endIndex = body.length();
+    private static String extractValueFromBody(String body, String key) throws Exception {
+        int startIndex = body.indexOf(key);
+        if (startIndex != -1) {
+            startIndex += key.length();
+            int endIndex = body.indexOf("\n", startIndex);
+            if (endIndex != -1)
+                return body.substring(startIndex, endIndex).trim();
+            else
+                return body.substring(startIndex).trim();
+
         }
-        return body.substring(startIndex + prefix.length(), endIndex).trim();
+        throw new Exception("key not contained in body");
     }
 
     private String getProposals(Request req, Response res) {

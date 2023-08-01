@@ -26,11 +26,10 @@ public class Main {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     static {
-        CREATE_PROPOSAL_MOCK.put("Body", "Start: 18 Apr 23 13:40 UTC, End: 18 Apr 23 13:45 UTC, " +
-                "Author: 0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959");
+        CREATE_PROPOSAL_MOCK.put("Body",  "HAL new format of notification\nProposal Created\nStarts on: 28 Jul 23 13:27 UTC\nEnds on: 31 Jul 23 13:27 UTC\nAuthor: 0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959");
         CREATE_PROPOSAL_MOCK.put("ProposalEvent", "proposal/created");
         CREATE_PROPOSAL_MOCK.put("ProposalExpire", 0);
-        CREATE_PROPOSAL_MOCK.put("ProposalID", "proposal/0xeca96e839070fff6f6c5140fcf4939779794feb6028edecc03d5f518133cabc5");
+        CREATE_PROPOSAL_MOCK.put("ProposalID", "proposal/0x6e142d2c78802c3e56194fe7d4e6f49b760b7dea26d379d84e417e6c0ad09009");
         CREATE_PROPOSAL_MOCK.put("ProposalSpace", "victorbibiano.eth");
 
         GET_VOTING_POWER_MOCK.put("options", Map.of("url", HTTP_SERVER_URL + "api/v1/getVotingPower", "type", "api-post"));

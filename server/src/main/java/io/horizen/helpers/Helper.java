@@ -3,6 +3,8 @@ package io.horizen.helpers;
 import com.google.gson.JsonObject;
 import io.horizen.config.Settings;
 import io.horizen.data_types.VotingProposal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -14,6 +16,9 @@ import java.nio.file.Paths;
 import java.util.Base64;
 
 public class Helper {
+
+    private static final Logger log =  LoggerFactory.getLogger(Helper.class);
+
     private static Settings settings;
 
     public static void initialize(Settings mySettings) {
@@ -89,18 +94,18 @@ public class Helper {
         // Check if the file exists before reading
         File file = new File(filePath);
         if (!file.exists()) {
-            System.out.println("File does not exist.");
+            log.info("Proposal file does not exist.");
             return null;
         }
 
         StringBuilder jsonData = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
-            while ((line = reader.readLine()) != null) {
+            while ((line = reader.readLine()) != null)
                 jsonData.append(line);
-            }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            log.error("Error in reading proposal file " + ex);
+            return null;
         }
 
         return MyGsonManager.getGson().fromJson(jsonData.toString(), VotingProposal.class);
