@@ -6,7 +6,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.inject.Inject;
 import io.horizen.config.Settings;
-import io.horizen.helpers.Constants;
 import io.horizen.helpers.Helper;
 import io.horizen.helpers.MyGsonManager;
 import io.horizen.services.NscService;
@@ -167,7 +166,7 @@ public class NscServiceImpl implements NscService {
 
         // Create the params JSON object
         JsonObject paramsObject = new JsonObject();
-        paramsObject.addProperty("from", Constants.ETH_CALL_FROM_ADDRESS);
+        paramsObject.addProperty("from", settings.getEthCallFromAddress());
         paramsObject.addProperty("to", "0x0000000000000000000088888888888888888888");
         paramsObject.addProperty("value", "0x00");
         paramsObject.addProperty("gasLimit", "0x21000");

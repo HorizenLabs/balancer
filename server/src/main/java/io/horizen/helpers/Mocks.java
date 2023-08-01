@@ -2,11 +2,7 @@ package io.horizen.helpers;
 
 import java.util.*;
 
-public final class Constants {
-
-    // This is the address which is used for calling eth_call which invokes the NSC. Some fund must be stored there
-    // otherwise the call fails (no sufficient balance)
-    public static final String ETH_CALL_FROM_ADDRESS = "0x00c8f107a09cd4f463afc2f1e6e5bf6022ad4600";
+public final class Mocks {
 
     // when a Native smart contract is not available this can be helpful
     // see mockNsc setting in conf file

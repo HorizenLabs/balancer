@@ -10,7 +10,7 @@ import io.horizen.data_types.VotingProposal;
 import io.horizen.exception.GetMcAddressMapException;
 import io.horizen.exception.OwnerStringException;
 import io.horizen.exception.OwnershipAlreadySetException;
-import io.horizen.helpers.Constants;
+import io.horizen.helpers.Mocks;
 import io.horizen.helpers.Helper;
 import io.horizen.helpers.MyGsonManager;
 import io.horizen.services.RosettaService;
@@ -118,7 +118,7 @@ public class Balancer {
 
         // Add the "ownerships" part
         JsonObject ownerships = new JsonObject();
-        for (Map.Entry<String, List<String>> entry : Constants.mockMcAddressMap.entrySet()) {
+        for (Map.Entry<String, List<String>> entry : Mocks.mockMcAddressMap.entrySet()) {
             String key = entry.getKey();
             List<String> value = entry.getValue();
 
@@ -313,7 +313,7 @@ public class Balancer {
         log.info("getOwnerships request with data " + req.body());
 
         if (settings.getMockNsc())
-            ret = Constants.mockMcAddressMap;
+            ret = Mocks.mockMcAddressMap;
         else {
             String scAddress;
             try {

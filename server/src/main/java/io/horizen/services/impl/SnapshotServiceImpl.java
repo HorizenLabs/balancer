@@ -5,7 +5,7 @@ import io.horizen.config.Settings;
 import io.horizen.data_types.VotingProposal;
 import io.horizen.exception.OwnerStringException;
 import io.horizen.exception.OwnershipAlreadySetException;
-import io.horizen.helpers.Constants;
+import io.horizen.helpers.Mocks;
 import io.horizen.helpers.Helper;
 import io.horizen.services.NscService;
 import io.horizen.services.SnapshotService;
@@ -49,14 +49,14 @@ public class SnapshotServiceImpl implements SnapshotService {
 
     public Map<String, List<String>> getMcAddressMap(String scAddress) throws Exception {
         if (settings.getMockNsc())
-            return Constants.mockMcAddressMap;
+            return Mocks.mockMcAddressMap;
         else
             return nscService.getNscOwnerships(scAddress);
     }
 
     public List<String> getOwnerScAddrList() throws Exception {
         if (settings.getMockNsc())
-            return Constants.mockOwnerScAddrList;
+            return Mocks.mockOwnerScAddrList;
         else
             return nscService.getNscOwnerScAddresses();
     }
@@ -67,8 +67,8 @@ public class SnapshotServiceImpl implements SnapshotService {
         if (owner.length() != 42  || !owner.substring(2).matches("[0-9A-Fa-f]+"))
             throw new OwnerStringException();
         else {
-            if (Constants.mockMcAddressMap.containsKey(owner)) {
-                List<String> addresses = Constants.mockMcAddressMap.get(owner);
+            if (Mocks.mockMcAddressMap.containsKey(owner)) {
+                List<String> addresses = Mocks.mockMcAddressMap.get(owner);
                 if (addresses.contains(address))
                     throw new OwnershipAlreadySetException();
                 else

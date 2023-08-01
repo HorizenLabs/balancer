@@ -14,7 +14,6 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import java.io.FileInputStream;
 import java.security.KeyStore;
-import java.util.Properties;
 
 import static spark.Spark.*;
 
@@ -24,22 +23,11 @@ public class Main {
     private static final Logger log =  LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) {
-        if (args.length != 1) {
-            throw new RuntimeException("conf file path not specified");
-        }
+        Settings settings = new Settings();
 
-        Settings settings;
-        try {
-            settings = readConfigFromFile(args[0]);
-        } catch (Exception ex) {
-            log.error("Error in reading config file " + ex);
-            throw new RuntimeException(ex);
-        }
+        setupSSL();
 
-        if (settings.getSsl())
-            setupSSL();
-
-        port(settings.getServerPort());
+        port(8080); //change for different port
 
         checkMocks(settings);
 
@@ -90,31 +78,5 @@ public class Main {
             System.out.println("##    MOCKING NSC MODULE    ##");
             System.out.println("##################################");
         }
-    }
-
-    private static Settings readConfigFromFile(String configFilePath) throws Exception {
-        Properties properties = new Properties();
-        FileInputStream fis = new FileInputStream(configFilePath);
-        properties.load(fis);
-
-        String nscUrl = properties.getProperty("nscUrl");
-        String rosettaUrl = properties.getProperty("rosettaUrl");
-        String network = properties.getProperty("network");
-        Boolean mockNsc = Boolean.parseBoolean(properties.getProperty("mockNsc"));
-        Boolean mockRosetta = Boolean.parseBoolean(properties.getProperty("mockRosetta"));
-        Boolean ssl = Boolean.parseBoolean(properties.getProperty("ssl"));
-        String proposalJsonDataFileName = properties.getProperty("proposalJsonDataFileName");
-        String proposalJsonDataPath = properties.getProperty("proposalJsonDataPath");
-        int serverPort = Integer.parseInt(properties.getProperty("port"));
-
-        return new Settings(
-                proposalJsonDataFileName,
-                proposalJsonDataPath,
-                nscUrl,
-                rosettaUrl,
-                network,
-                mockNsc,
-                mockRosetta,
-                ssl, serverPort);
     }
 }

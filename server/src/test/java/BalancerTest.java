@@ -4,7 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import io.horizen.Main;
-import io.horizen.helpers.Constants;
+import io.horizen.helpers.Mocks;
 import io.horizen.helpers.MyGsonManager;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -79,7 +79,7 @@ public class BalancerTest {
         Type mapType = new TypeToken<Map<String, List<String>>>() {}.getType();
         Map<String, List<String>> resultMap = MyGsonManager.getGson().fromJson(response, mapType);
 
-        assertEquals(Constants.mockMcAddressMap, resultMap);
+        assertEquals(Mocks.mockMcAddressMap, resultMap);
     }
 
     @Test
@@ -111,7 +111,7 @@ public class BalancerTest {
 
         Map<String, List<String>> ownershipsMap = parseOwnershipsMap(ownershipsObject);
 
-        assertEquals(Constants.mockMcAddressMap, ownershipsMap);
+        assertEquals(Mocks.mockMcAddressMap, ownershipsMap);
         assertTrue(ownershipsMap.containsKey("0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959"));
         assertTrue(ownershipsMap.get("0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959").contains("ztWBHD2Eo6uRLN6xAYxj8mhmSPbUYrvMPwt"));
     }
@@ -147,7 +147,7 @@ public class BalancerTest {
         Type listType = new TypeToken<List<String>>() {}.getType();
         List<String> addrestList = MyGsonManager.getGson().fromJson(response, listType);
 
-        assertEquals(Constants.mockOwnerScAddrList, addrestList);
+        assertEquals(Mocks.mockOwnerScAddrList, addrestList);
     }
 
     private Map<String, List<String>> parseOwnershipsMap(JsonObject ownershipsObject) {
