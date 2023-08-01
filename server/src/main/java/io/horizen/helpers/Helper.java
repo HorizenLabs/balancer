@@ -1,6 +1,7 @@
 package io.horizen.helpers;
 
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import io.horizen.config.Settings;
 import io.horizen.data_types.VotingProposal;
 import org.slf4j.Logger;
@@ -13,7 +14,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Base64;
+import java.util.Date;
 
 public class Helper {
 
@@ -108,6 +112,28 @@ public class Helper {
             return null;
         }
 
-        return MyGsonManager.getGson().fromJson(jsonData.toString(), VotingProposal.class);
+        JsonObject json = JsonParser.parseString(jsonData.toString()).getAsJsonObject();
+        JsonObject proposalObject = json.getAsJsonObject("Proposal");
+
+        String id = proposalObject.get("ID").getAsString();
+        int blockHeight = proposalObject.get("block_height").getAsInt();
+        String blockHash = proposalObject.get("block_hash").getAsString();
+
+        Date fromTime;
+        Date toTime;
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String fromTimeString = proposalObject.get("from").getAsString();
+            String toTimeString = proposalObject.get("to").getAsString();
+            fromTime = sdf.parse(fromTimeString);
+            toTime = sdf.parse(toTimeString);
+
+        } catch (ParseException e) {
+            return null;
+        }
+
+        String author = proposalObject.get("Author").getAsString();
+
+        return new VotingProposal(id, blockHeight, blockHash, fromTime, toTime, author);
     }
 }

@@ -46,7 +46,7 @@ public class BalancerTest {
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-Type", "application/json");
-        String requestBody = "{'Body': 'Start: 18 Apr 23 13:40 UTC, End: 18 Apr 23 13:45 UTC, Author: 0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959', 'ProposalEvent': 'proposal/created', 'ProposalExpire': 0, 'ProposalID': 'proposal/0xeca96e839070fff6f6c5140fcf4939779794feb6028edecc03d5f518133cb2', 'ProposalSpace': 'victorbibiano.eth'}";
+        String requestBody = "{'Body': 'HAL new format of notification\nProposal Created\nStarts on: 28 Jul 23 13:27 UTC\nEnds on: 31 Jul 23 13:27 UTC\nAuthor: 0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959', 'ProposalEvent': 'proposal/created', 'ProposalExpire': 0, 'ProposalID': 'proposal/0xeca96e839070fff6f6c5140fcf4939779794feb6028edecc03d5f518133cb2', 'ProposalSpace': 'victorbibiano.eth'}";
         DataOutputStream outputStream = new DataOutputStream(connection.getOutputStream());
         outputStream.writeBytes(requestBody);
         outputStream.flush();
@@ -65,7 +65,7 @@ public class BalancerTest {
 
         String response = IOUtils.toString(connection.getInputStream());
         JsonElement jsonElement = JsonParser.parseString(response);
-        String proposalId = jsonElement.getAsJsonArray().get(0).getAsJsonObject().get("id").getAsString();
+        String proposalId = jsonElement.getAsJsonArray().get(0).getAsJsonObject().get("ID").getAsString();
         assertEquals(proposalId, "proposal/0xeca96e839070fff6f6c5140fcf4939779794feb6028edecc03d5f518133cb2");
     }
 

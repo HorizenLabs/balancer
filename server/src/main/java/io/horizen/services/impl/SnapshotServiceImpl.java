@@ -78,7 +78,12 @@ public class SnapshotServiceImpl implements SnapshotService {
     }
 
     public void initActiveProposal() {
-        VotingProposal votingProposal = Helper.readProposalFromFile();
+        VotingProposal votingProposal;
+        try {
+            votingProposal = Helper.readProposalFromFile();
+        } catch (Exception ex) {
+            votingProposal = null;
+        }
         if (votingProposal != null) {
             activeProposal = votingProposal;
             proposals.put(votingProposal.getId(), votingProposal);
