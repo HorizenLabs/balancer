@@ -4,7 +4,7 @@ class VotingProposal(object):
         self.block_height = bl_height
         self.block_hash = bl_hash
         self.fromTime = from_time
-        self.toTime = to_timeh
+        self.toTime = to_time
         self.author = author
 
     def to_json(self):

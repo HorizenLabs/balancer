@@ -95,6 +95,6 @@ def get_mainchain_block_hash(height):
     print_outgoing("Rosetta", "/block", request_body)
     response = requests.post(ROSETTA_URL + "block", json.dumps(request_body))
     print_incoming("Rosetta", "/block", response.json())
-    block_hash = str(response.json()["block_identifier"]["hash"])
+    block_hash = str(response.json()['block']["block_identifier"]["hash"])
 
     return block_hash

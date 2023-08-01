@@ -143,13 +143,13 @@ def api_server():
     # ---------------------
     # localhost (cert generated via openssl, see:
     # https://kracekumar.com/post/54437887454/ssl-for-flask-local-development/
-    context = ('/tmp/server.crt', '/tmp/server.key')  # certificate and key files
+    # context = ('/tmp/server.crt', '/tmp/server.key')  # certificate and key files
 
     # official server (certificates generated there via certbot)
     # $ export FQDN="zendao-tn-1.de.horizenlabs.io"
     # $ sudo certbot certonly  -n --agree-tos --register-unsafely-without-email --standalone -d $FQDN
-    # context = ('/etc/letsencrypt/archive/zendao-tn-1.de.horizenlabs.io/fullchain1.pem',
-    #            '/etc/letsencrypt/archive/zendao-tn-1.de.horizenlabs.io/privkey1.pem')
+    context = ('/etc/letsencrypt/archive/zendao-tn-1.de.horizenlabs.io/fullchain1.pem',
+               '/etc/letsencrypt/archive/zendao-tn-1.de.horizenlabs.io/privkey1.pem')
 
     app.run(host="0.0.0.0", port=5000, ssl_context=context)
 
