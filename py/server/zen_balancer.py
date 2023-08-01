@@ -13,7 +13,7 @@ from modules.util_methods import print_incoming, print_outgoing, read_proposal_f
 # from werkzeug.middleware.proxy_fix import ProxyFix
 
 from modules.balancerError import GetOwnershipError, GetOwnerScAddressesError, \
-    CreateProposalError, AddOwnershipError
+    CreateProposalError, AddOwnershipError, GenericError
 
 
 def api_server():
@@ -28,7 +28,9 @@ def api_server():
 
         print_incoming("BalancerApiServer", "/api/v1/getOwnerships", cmd_input)
 
-        if MOCK_NSC:
+        if 'scAddress' not in cmd_input:
+            ret = GenericError("Missing sc address in input").get()
+        elif MOCK_NSC:
             ret = MOCK_MC_ADDRESS_MAP
         else:
             sc_address = cmd_input['scAddress']
@@ -90,18 +92,22 @@ def api_server():
     @app.route('/api/v1/getVotingPower', methods=['GET'])
     def get_voting_power():
 
-        content = request.args
-        print_incoming("BalancerApiServer", "/api/v1/getVotingPower", content)
+        cmd_input = request.args
+        print_incoming("BalancerApiServer", "/api/v1/getVotingPower", cmd_input)
 
         print_log(
             "getting voting power for active proposal:\n" + json.dumps(get_active_proposal().to_json(), indent=4))
 
-        # Parse requested address. In GET this is one address actually
-        requested_address = content["addresses"]
 
-        # Retrieve balance for the owned MC addresses at the height/hash block specified in the active proposal.
-        # This also checks if proposal have been created
-        response = get_address_balance(requested_address)
+        if 'addresses' not in cmd_input:
+            response = GenericError("Missing sc address in input").get()
+        else:
+            # Parse requested address. In GET this is one only address actually
+            sc_requested_address = cmd_input["addresses"]
+
+            # Retrieve balance for the owned MC addresses at the height/hash block specified in the active proposal.
+            # This also checks if proposal have been created
+            response = get_address_balance(sc_requested_address)
 
         # Answer back with the balance
         print_outgoing("BalancerApiServer", "/api/v1/getVotingPower", response)
@@ -110,13 +116,13 @@ def api_server():
     # usable only when mocking native smart contract
     @app.route('/api/v1/addOwnership', methods=['POST'])
     def add_ownership():
-        proposal = json.loads(request.data)
+        cmd_input = json.loads(request.data)
 
-        print_incoming("BalancerApiServer", "/api/v1/addOwnership", proposal)
+        print_incoming("BalancerApiServer", "/api/v1/addOwnership", cmd_input)
 
         if MOCK_NSC:
             ret = {
-                'result': add_mock_ownership_entry(proposal),
+                'result': add_mock_ownership_entry(cmd_input),
                 'ownerships': MOCK_MC_ADDRESS_MAP,
             }
         else:
