@@ -7,7 +7,7 @@ import base58
 from .definitions import MOCK_MC_ADDRESS_MAP, MOCK_NSC, MOCK_OWNER_SC_ADDR_LIST
 from .nsc_methods import get_nsc_ownerships, get_nsc_owner_sc_addresses
 from .proposal import VotingProposal
-from .util_methods import write_proposal_to_file
+from .util_methods import write_proposal_to_file, print_log
 
 active_proposal = VotingProposal(in_id=None)
 mutex = Lock()
@@ -36,7 +36,7 @@ def extract_body_attributes(body_string):
             auth_string = re.split(AUTHOR_TAG, t)[1]
         else:
             # not handled
-            print("Tag not currently handled in proposal body: {}".format(t))
+            print_log("Tag not currently handled in proposal body: {}".format(t))
 
     if from_time is None or to_time is None:
         raise Exception("Could not get valid time window borders from proposal msg")

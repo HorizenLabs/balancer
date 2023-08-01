@@ -1,10 +1,9 @@
 import json
-import pprint
 import requests
 from eth_abi import decode
 from eth_utils import remove_0x_prefix, to_checksum_address, function_signature_to_4byte_selector, encode_hex
 from .definitions import NSC_URL, ETH_CALL_FROM_ADDRESS
-from .util_methods import print_outgoing, print_incoming, check_sc_address, hex_str_to_bytes
+from .util_methods import print_outgoing, print_incoming, check_sc_address, hex_str_to_bytes, print_log
 
 
 # not used; useful for calling http api endpoint
@@ -48,11 +47,11 @@ def get_nsc_ownerships(sc_address=None):
     }
     print_outgoing("NSC", "/ethv1/eth_call (getKeysOwnership)", request_body)
     response = requests.post(NSC_URL + "ethv1", json.dumps(request_body), auth=('user', 'Horizen'))
-    abi_return_value = remove_0x_prefix(response.json()['result'])
-
-    ret = get_key_ownership_from_abi(abi_return_value)
     print_incoming("NSC", "/ethv1/eth_call (getKeysOwnership)", response.json())
+    abi_return_value = remove_0x_prefix(response.json()['result'])
+    ret = get_key_ownership_from_abi(abi_return_value)
     return ret
+
 
 # invokes eth_call RPC
 def get_nsc_owner_sc_addresses():
@@ -77,11 +76,11 @@ def get_nsc_owner_sc_addresses():
     }
     print_outgoing("NSC", "/ethv1/eth_call (getKeyOwnerScAddresses)", request_body)
     response = requests.post(NSC_URL + "ethv1", json.dumps(request_body), auth=('user', 'Horizen'))
-    abi_return_value = remove_0x_prefix(response.json()['result'])
-
-    ret = get_owner_sc_addr_from_abi(abi_return_value)
     print_incoming("NSC", "/ethv1/eth_call (getKeyOwnerScAddresses)", response.json())
+    abi_return_value = remove_0x_prefix(response.json()['result'])
+    ret = get_owner_sc_addr_from_abi(abi_return_value)
     return ret
+
 
 def get_key_ownership_from_abi(abi_return_value):
     # the location of the data part of the first (the only one in this case) parameter (dynamic type), measured in bytes
@@ -98,7 +97,6 @@ def get_key_ownership_from_abi(abi_return_value):
         (address_pref, mca3, mca32) = decode(['address', 'bytes3', 'bytes32'],
                                              hex_str_to_bytes(abi_return_value[start_offset:end_offset]))
         sc_address_checksum_fmt = to_checksum_address(address_pref)
-        print("sc addr=" + sc_address_checksum_fmt)
         if sc_associations_dict.get(sc_address_checksum_fmt) is not None:
             mc_addr_list = sc_associations_dict.get(sc_address_checksum_fmt)
         else:
@@ -106,11 +104,12 @@ def get_key_ownership_from_abi(abi_return_value):
             mc_addr_list = []
         mc_addr = (mca3 + mca32).decode('utf-8')
         mc_addr_list.append(mc_addr)
-        print("mc addr=" + mc_addr)
+        print_log("sc_addr=" + sc_address_checksum_fmt + " / mc_addr=" + mc_addr)
         sc_associations_dict[sc_address_checksum_fmt] = mc_addr_list
 
-    pprint.pprint(sc_associations_dict)
+    # print_log(json.dumps(sc_associations_dict, indent=4))
     return sc_associations_dict
+
 
 def get_owner_sc_addr_from_abi(abi_return_value):
     # the location of the data part of the first (the only one in this case) parameter (dynamic type), measured in bytes
@@ -126,11 +125,12 @@ def get_owner_sc_addr_from_abi(abi_return_value):
         end_offset = start_offset + 64  # read (32) bytes
         (address_pref) = decode(['address'], hex_str_to_bytes(abi_return_value[start_offset:end_offset]))
         sc_address_checksum_fmt = to_checksum_address(address_pref[0])
-        print("sc addr=" + sc_address_checksum_fmt)
+        print_log("sc addr=" + sc_address_checksum_fmt)
 
         sc_address_list.append(sc_address_checksum_fmt)
 
-    pprint.pprint(sc_address_list)
+    #print_log(json.dumps(sc_address_list))
     return sc_address_list
+
 
 proposal_dict = {}

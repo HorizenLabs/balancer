@@ -1,4 +1,5 @@
 import json
+import logging
 from binascii import unhexlify
 from json import JSONDecodeError
 
@@ -6,18 +7,20 @@ from eth_utils import remove_0x_prefix
 
 from .definitions import PROPOSAL_JSON_DATA_PATH, PROPOSAL_JSON_DATA_FILE_NAME
 
+logging.basicConfig(
+    level=logging.INFO,
+    format='[%(asctime)s] %(levelname)s:\n%(message)s'
+)
 
 def print_incoming(component_tag, endpoint_tag, content):
-    print("<<<< " + component_tag + " " + endpoint_tag + " received:")
-    print(json.dumps(content, indent=4))
-    print()
+    logging.info("<<<< " + component_tag + " " + endpoint_tag + " received:\n" + json.dumps(content, indent=4))
 
 
 def print_outgoing(component_tag, endpoint_tag, content):
-    print(">>>> " + component_tag + " " + endpoint_tag + " sending:")
-    print(json.dumps(content, indent=4))
-    print()
+    logging.info(">>>> " + component_tag + " " + endpoint_tag + " sending:\n" + json.dumps(content, indent=4))
 
+def print_log(msg):
+    logging.info(msg)
 
 def check_sc_address(sc_address):
     sc_address = remove_0x_prefix(sc_address)
@@ -43,9 +46,9 @@ def read_proposal_from_file():
             # print(json_object)
 
     except FileNotFoundError as e:
-        print("Warning: " + str(e))
+        logging.warning("Warning: " + str(e))
     except JSONDecodeError as e:
-        print("Error: could not decode file [" + file_name + "]: " + str(e))
+        logging.error("Error: could not decode file [" + file_name + "]: " + str(e))
 
     return json_object
 
@@ -61,6 +64,6 @@ def write_proposal_to_file(prop):
         with open(file_name, 'w') as outfile:
             outfile.write(json_object)
     except FileNotFoundError as e:
-        print("Warning: " + str(e))
+        logging.warning("Warning: " + str(e))
     except Exception as e:
-        print("Error: " + str(e))
+        logging.error("Error: " + str(e))

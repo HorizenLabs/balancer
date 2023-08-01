@@ -6,7 +6,8 @@ from modules.snapshot_methods import add_ownership_entry, \
     proposal_dict, get_owner_sc_addr_list, init_active_proposal
 from modules.rosetta_methods import get_chain_tip, get_address_balance
 from modules.definitions import MOCK_NSC, MOCK_MC_ADDRESS_MAP, MOCK_OWNER_SC_ADDR_LIST, check_mocks
-from modules.util_methods import print_incoming, print_outgoing, read_proposal_from_file
+from modules.util_methods import print_incoming, print_outgoing, read_proposal_from_file, print_log
+
 
 # see below for proxy usage
 # from werkzeug.middleware.proxy_fix import ProxyFix
@@ -127,8 +128,8 @@ def api_server():
             print_outgoing("BalancerApiServer", "/api/v1/getVotingPower", err)
             return err
 
-        print(
-            "getting voting power for active proposal: " + json.dumps(get_active_proposal().to_json(), indent=4))
+        print_log(
+            "getting voting power for active proposal:\n" + json.dumps(get_active_proposal().to_json(), indent=4))
 
         # Parse requested address. In GET this is one address actually
         requested_address = content["addresses"]
