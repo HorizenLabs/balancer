@@ -39,21 +39,14 @@ def get_address_balance(sc_address):
             return MOCK_ROSETTA_GET_BALANCE_RESP
 
         bl_height = int(prop.block_height)
-        bl_hash = str(prop.block_hash)
-
-        # Check the MC block has not been reverted. In such a case use the block hash corresponding to that height
-        actual_bl_hash = get_mainchain_block_hash(bl_height)
-        if actual_bl_hash != bl_hash:
-            print_log(
-                "MC block hash mismatch. Using hash=" + actual_bl_hash + " (instead of " + bl_hash + ") for "
-                "height=" + str(bl_height))
-            bl_hash = actual_bl_hash
 
         # Call Rosetta endpoint /account/balance
+        # In the query we use just the block height (omitting the hash) in the 'block_identifier', this is for handling also
+        # the case of a chain reorg which reverts the block whose hash was red when the proposal has been received
         for mc_address in mc_addresses:
             request_body = ROSETTA_REQUEST_NETWORK_STATUS_TEMPLATE
             request_body["account_identifier"] = {"address": mc_address, "metadata": {}}
-            request_body["block_identifier"] = {"index": bl_height, "hash": bl_hash}
+            request_body["block_identifier"] = {"index": bl_height}
             print_outgoing("Rosetta", "/account/balance", request_body)
 
             response = requests.post(ROSETTA_URL + "account/balance", json.dumps(request_body))
