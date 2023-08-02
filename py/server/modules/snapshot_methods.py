@@ -1,4 +1,5 @@
-import datetime
+import json
+import logging
 import re
 import string
 from threading import Lock
@@ -9,7 +10,8 @@ from .balancerError import AddOwnershipError
 from .definitions import MOCK_MC_ADDRESS_MAP, MOCK_NSC, MOCK_OWNER_SC_ADDR_LIST
 from .nsc_methods import get_nsc_ownerships, get_nsc_owner_sc_addresses
 from .proposal import VotingProposal
-from .util_methods import write_proposal_to_file, print_log
+from .util_methods import write_proposal_to_file, print_log, warn_if_proposal_not_active
+from dateutil import parser
 
 active_proposal = VotingProposal(in_id=None)
 mutex = Lock()
@@ -30,10 +32,10 @@ def extract_body_attributes(body_string):
     for t in s1:
         if t.startswith(START_TAG):
             from_string = re.split(START_TAG, t)[1]
-            from_time = datetime.datetime.strptime(from_string, '%d %b %y %H:%M %Z')
+            from_time = parser.parse(from_string)
         elif t.startswith(END_TAG):
             to_string = re.split(END_TAG, t)[1]
-            to_time = datetime.datetime.strptime(to_string, '%d %b %y %H:%M %Z')
+            to_time = parser.parse(to_string)
         elif t.startswith(AUTHOR_TAG):
             auth_string = re.split(AUTHOR_TAG, t)[1]
         else:
@@ -85,12 +87,15 @@ def init_active_proposal(deserialized_proposal_dict):
             in_id=prop_id,
             bl_height=chain_tip_height,
             bl_hash=chain_tip_hash,
-            from_time=from_time,
-            to_time=to_time,
+            from_time=parser.parse(from_time),
+            to_time=parser.parse(to_time),
             author=author)
 
         proposal_dict[prop_id] = prop
+
+        logging.info("Setting active voting proposal:\n" + json.dumps(prop.to_json(), indent=4))
         active_proposal = prop
+        warn_if_proposal_not_active(prop)
 
 
 # used only when mocking nsc

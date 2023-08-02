@@ -1,3 +1,4 @@
+import datetime
 import json
 import logging
 from binascii import unhexlify
@@ -68,3 +69,23 @@ def write_proposal_to_file(prop):
         logging.warning("Warning: " + str(e))
     except Exception as e:
         logging.error("Error: " + str(e))
+
+
+def warn_if_proposal_not_active(prop):
+    time_now = datetime.datetime.now()
+    if prop.fromTime > time_now:
+        logging.warning(
+            "######################################################################################\n" +
+            "Proposal is not started yet!\nTime now: " + str(time_now) +
+            ", proposal starts at time: " + str(prop.fromTime) + "\n" +
+            "######################################################################################"
+        )
+    elif prop.toTime < time_now:
+        logging.warning(
+            "######################################################################################\n" +
+            "Proposal is closed!\nTime now: " + str(time_now) +
+            ", proposal closed at time: " + str(prop.toTime) + "\n" +
+            "######################################################################################"
+        )
+    else:
+        pass

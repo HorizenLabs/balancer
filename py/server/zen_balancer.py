@@ -2,11 +2,11 @@ import threading
 from flask import Flask, request, json
 
 from modules.snapshot_methods import add_mock_ownership_entry, \
-    get_mc_address_map, store_proposal_data, get_active_proposal, \
+    get_mc_address_map, store_proposal_data, \
     proposal_dict, get_owner_sc_addr_list, init_active_proposal
 from modules.rosetta_methods import get_mainchain_tip, get_address_balance
 from modules.definitions import MOCK_NSC, MOCK_MC_ADDRESS_MAP, check_mocks
-from modules.util_methods import print_incoming, print_outgoing, read_proposal_from_file, print_log
+from modules.util_methods import print_incoming, print_outgoing, read_proposal_from_file
 
 
 # see below for proxy usage
@@ -94,10 +94,6 @@ def api_server():
 
         cmd_input = request.args
         print_incoming("BalancerApiServer", "/api/v1/getVotingPower", cmd_input)
-
-        print_log(
-            "getting voting power for active proposal:\n" + json.dumps(get_active_proposal().to_json(), indent=4))
-
 
         if 'addresses' not in cmd_input:
             response = GenericError("Missing sc address in input").get()

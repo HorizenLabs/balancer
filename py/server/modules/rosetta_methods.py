@@ -1,11 +1,12 @@
 import json
+
 import requests
 
 from .balancerError import GetProposalError, GenericError
 from .snapshot_methods import get_mc_address_map, get_active_proposal
 from .definitions import MOCK_ROSETTA, MOCK_ROSETTA_GET_BALANCE_RESP, ROSETTA_REQUEST_NETWORK_STATUS_TEMPLATE, \
     ROSETTA_URL, ROSETTA_REQUEST_BLOCK_TEMPLATE, MOCK_ROSETTA_BLOCK_HASH, MOCK_ROSETTA_BLOCK_HEIGHT
-from .util_methods import print_outgoing, print_incoming, print_log
+from .util_methods import print_outgoing, print_incoming, print_log, warn_if_proposal_not_active
 
 
 def get_address_balance(sc_address):
@@ -16,6 +17,12 @@ def get_address_balance(sc_address):
 
         # Retrieve associated MC addresses balance
     balance = 0
+    prop = get_active_proposal()
+
+    warn_if_proposal_not_active(prop)
+
+    print_log(
+        "getting voting power for active proposal:\n" + json.dumps(get_active_proposal().to_json(), indent=4))
 
     try:
         mc_address_map = get_mc_address_map(sc_address)
@@ -31,8 +38,8 @@ def get_address_balance(sc_address):
             print("-------------MOCK ROSETTA RESPONSE------------")
             return MOCK_ROSETTA_GET_BALANCE_RESP
 
-        bl_height = int(get_active_proposal().block_height)
-        bl_hash = str(get_active_proposal().block_hash)
+        bl_height = int(prop.block_height)
+        bl_hash = str(prop.block_hash)
 
         # Check the MC block has not been reverted. In such a case use the block hash corresponding to that height
         actual_bl_hash = get_mainchain_block_hash(bl_height)
