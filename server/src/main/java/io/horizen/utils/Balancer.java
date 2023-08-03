@@ -322,7 +322,11 @@ public class Balancer {
                 scAddress = jsonObject.get("scAddress").getAsString();
             }
             catch (Exception ex) {
-                scAddress = null;
+                int code = 301;
+                String description = "Could not get ownership - no scAddress found";
+                String detail = "An exception occurred: " + ex;
+                log.error("Error in getOwnerships - no scAddress found" + ex);
+                return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
             }
             try {
                 ret = snapshotService.getMcAddressMap(scAddress);

@@ -36,24 +36,18 @@ public class NscServiceImpl implements NscService {
     public Map<String, List<String>> getNscOwnerships(String scAddress) throws Exception {
         String method;
         String abiString;
-        if (scAddress == null) {
-            method = "getAllKeyOwnerships()";
-            // Generate the 4-byte selector
-            byte[] selector = Arrays.copyOf(Hash.sha3(method.getBytes()),4);
-            abiString = "0x" + Numeric.toHexStringNoPrefix(selector);
-        } else {
-            // Remove the "0x" prefix
-            if (scAddress.startsWith("0x"))
-                scAddress = scAddress.substring(2);
 
-            if (scAddress.length() != 40 || !Pattern.matches("[0-9A-Fa-f]+", scAddress))
-                throw new Exception("Invalid sc address length: {}, expected 40");
+        // Remove the "0x" prefix
+        if (scAddress.startsWith("0x"))
+            scAddress = scAddress.substring(2);
 
-            method = "getKeyOwnerships(address)";
-            byte[] selector = Arrays.copyOf(Hash.sha3(method.getBytes()),4);
-            String abiMethodString = "0x" + Numeric.toHexStringNoPrefix(selector);
-            abiString = abiMethodString + "000000000000000000000000" + scAddress;
-        }
+        if (scAddress.length() != 40 || !Pattern.matches("[0-9A-Fa-f]+", scAddress))
+            throw new Exception("Invalid sc address length: {}, expected 40");
+
+        method = "getKeyOwnerships(address)";
+        byte[] selector = Arrays.copyOf(Hash.sha3(method.getBytes()),4);
+        String abiMethodString = "0x" + Numeric.toHexStringNoPrefix(selector);
+        abiString = abiMethodString + "000000000000000000000000" + scAddress;
 
         String requestBody = buildNscRequestBody(abiString);
         HttpURLConnection connection = Helper.sendRequestWithAuth(settings.getNscUrl() + "ethv1", requestBody, "user", "Horizen");
