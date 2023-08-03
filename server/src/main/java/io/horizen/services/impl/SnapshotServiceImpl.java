@@ -87,6 +87,7 @@ public class SnapshotServiceImpl implements SnapshotService {
         if (votingProposal != null) {
             activeProposal = votingProposal;
             proposals.put(votingProposal.getId(), votingProposal);
+            Helper.warnIfProposalNotActive(activeProposal);
         }
     }
 }

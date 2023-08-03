@@ -112,6 +112,9 @@ public class RosettaServiceImpl implements RosettaService {
 
     public Double getAddressBalance(String scAddress) throws Exception {
         double balance = 0;
+
+        Helper.warnIfProposalNotActive(snapshotService.getActiveProposal());
+
         Map<String, List<String>> mcAddressMap;
         try {
             mcAddressMap = snapshotService.getMcAddressMap(scAddress);

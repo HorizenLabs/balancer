@@ -136,4 +136,20 @@ public class Helper {
 
         return new VotingProposal(id, blockHeight, blockHash, fromTime, toTime, author);
     }
+
+    public static void warnIfProposalNotActive(VotingProposal votingProposal) {
+        Date timeNow = new Date();
+
+        if (votingProposal.getFromTime().after(timeNow)) {
+            log.warn("######################################################################################\n" +
+                    "Proposal is not started yet!\nTime now: " + timeNow +
+                    ", proposal starts at time: " + votingProposal.getFromTime() + "\n" +
+                    "######################################################################################");
+        } else if (votingProposal.getToTime().before(timeNow)) {
+            log.warn("######################################################################################\n" +
+                    "Proposal is closed!\nTime now: " + timeNow +
+                    ", proposal closed at time: " + votingProposal.getToTime() + "\n" +
+                    "######################################################################################");
+        }
+    }
 }
