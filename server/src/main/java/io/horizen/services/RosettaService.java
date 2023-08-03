@@ -4,7 +4,9 @@ import io.horizen.data_types.ChainTip;
 
 public interface RosettaService {
 
-    ChainTip getChainTip() throws Exception;
+    ChainTip getMainchainTip() throws Exception;
 
     Double getAddressBalance(String scAddress) throws Exception;
+
+    String getMainchainBlockHash(int height) throws Exception;
 }

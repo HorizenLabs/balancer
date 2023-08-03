@@ -8,18 +8,27 @@ import io.horizen.config.Settings;
 import io.horizen.data_types.ChainTip;
 import io.horizen.exception.GetMcAddressMapException;
 import io.horizen.helpers.Helper;
+import io.horizen.helpers.Mocks;
 import io.horizen.helpers.MyGsonManager;
 import io.horizen.services.RosettaService;
 import io.horizen.services.SnapshotService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spark.utils.IOUtils;
 
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class RosettaServiceImpl implements RosettaService {
     private final SnapshotService snapshotService;
     private final Settings settings;
+
+    private static final Logger log =  LoggerFactory.getLogger(RosettaService.class);
 
 
     @Inject
@@ -28,9 +37,9 @@ public class RosettaServiceImpl implements RosettaService {
         this.settings = settings;
     }
 
-    public ChainTip getChainTip() throws Exception {
+    public ChainTip getMainchainTip() throws Exception {
         if (settings.getMockRosetta())
-            return new ChainTip(100, "000439739cac7736282169bb10d368123ca553c45ea6d4509d809537cd31aa0d");
+            return new ChainTip(Mocks.MOCK_ROSETTA_BLOCK_HEIGHT, Mocks.MOCK_ROSETTA_BLOCK_HASH);
 
         // Call Rosetta endpoint /network/status
         String url = settings.getRosettaUrl() + "network/status";
@@ -56,9 +65,49 @@ public class RosettaServiceImpl implements RosettaService {
             else
                 throw new Exception(connection.getResponseCode() + " " + connection.getResponseMessage());
         } catch (Exception ex) {
-            ex.printStackTrace();
+            log.error("Error in getMainchainTip " + ex);
             throw ex;
         }
+    }
+
+    public String getMainchainBlockHash(int height) throws Exception{
+        if (settings.getMockRosetta()) {
+            return Mocks.MOCK_ROSETTA_BLOCK_HASH;
+        }
+
+        String requestBodyJson = buildRosettaRequestBodyForBlock(height);
+
+        URL apiUrl = new URL(settings.getRosettaUrl() + "block");
+        HttpURLConnection connection = (HttpURLConnection) apiUrl.openConnection();
+        connection.setRequestMethod("POST");
+        connection.setRequestProperty("Content-Type", "application/json");
+        connection.setDoOutput(true);
+
+        try (OutputStream os = connection.getOutputStream()) {
+            byte[] input = requestBodyJson.getBytes(StandardCharsets.UTF_8);
+            os.write(input, 0, input.length);
+        }
+
+        String response = IOUtils.toString(connection.getInputStream());
+        JsonObject responseObj = JsonParser.parseString(response).getAsJsonObject();
+
+        return responseObj.getAsJsonObject("block")
+                .getAsJsonObject("block")
+                .getAsJsonObject("block_identifier")
+                .get("hash")
+                .getAsString();
+    }
+
+    private String buildRosettaRequestBodyForBlock(int height) {
+        Map<String, Object> requestBody = new HashMap<>();
+        Map<String, String> networkIdentifier = new HashMap<>();
+        networkIdentifier.put("blockchain", "Zen");
+        networkIdentifier.put("network", settings.getNetwork());
+        Map<String, Integer> blockIdentifier = new HashMap<>();
+        blockIdentifier.put("index", height);
+        requestBody.put("network_identifier", networkIdentifier);
+        requestBody.put("block_identifier", blockIdentifier);
+        return MyGsonManager.getGson().toJson(requestBody);
     }
 
     public Double getAddressBalance(String scAddress) throws Exception {
@@ -78,8 +127,17 @@ public class RosettaServiceImpl implements RosettaService {
                 return 123456789.0;
             }
 
+            int blockHeight = snapshotService.getActiveProposal().getBlockHeight();
+            String blockHash = snapshotService.getActiveProposal().getBlockHash();
+
+            String actualBlockHash = getMainchainBlockHash(blockHeight);
+            if (!actualBlockHash.equals(blockHash)) {
+                log.info("MC block hash mismatch. Using hash=" + actualBlockHash + " (instead of " + blockHash + ") for height=" + blockHeight);
+                blockHash = actualBlockHash;
+            }
+
             for (String mcAddress : mcAddresses) {
-                String body = buildRosettaRequestBody(mcAddress);
+                String body = buildRosettaRequestBodyForNetworkStatus(mcAddress, blockHash);
                 HttpURLConnection connection = Helper.sendRequest(settings.getRosettaUrl() + "account/balance", body);
 
                 if(connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
@@ -101,7 +159,7 @@ public class RosettaServiceImpl implements RosettaService {
     }
 
 
-    private String buildRosettaRequestBody(String mcAddress) {
+    private String buildRosettaRequestBodyForNetworkStatus(String mcAddress, String blockHash) {
         JsonObject rosettaRequestTemplate = new JsonObject();
         rosettaRequestTemplate.addProperty("blockchain", "Zen");
         rosettaRequestTemplate.addProperty("network", settings.getNetwork());
@@ -116,7 +174,7 @@ public class RosettaServiceImpl implements RosettaService {
 
         JsonObject blockIdentifier = new JsonObject();
         blockIdentifier.addProperty("index", snapshotService.getActiveProposal().getBlockHeight());
-        blockIdentifier.addProperty("hash", snapshotService.getActiveProposal().getBlockHash());
+        blockIdentifier.addProperty("hash", blockHash);
         requestBody.add("block_identifier", blockIdentifier);
 
         return MyGsonManager.getGson().toJson(requestBody);

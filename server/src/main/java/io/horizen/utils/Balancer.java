@@ -254,7 +254,7 @@ public class Balancer {
             return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
         }
         try {
-            chainTip = rosettaService.getChainTip();
+            chainTip = rosettaService.getMainchainTip();
         } catch (Exception ex) {
             int code = 303;
             String description = "Can not create proposal";

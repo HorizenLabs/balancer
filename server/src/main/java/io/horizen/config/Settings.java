@@ -1,5 +1,6 @@
 package io.horizen.config;
 
+import java.nio.file.Paths;
 import java.util.Locale;
 import java.util.Optional;
 
@@ -18,9 +19,9 @@ public class Settings {
         this.mockRosetta = getBooleanEnv("MOCK_ROSETTA");
         this.nscUrl = Optional.ofNullable(System.getenv("NSC_URL")).orElse("http://zendao-tn-1.de.horizenlabs.io:8200/");
         this.rosettaUrl = Optional.ofNullable(System.getenv("ROSETTA_URL")).orElse("http://localhost:8080/");
-        this.network = Optional.ofNullable(System.getenv("NETWORK")).orElse("test");
+        this.network = Optional.ofNullable(System.getenv("ROSETTA_NETWORK_TYPE")).orElse("test"); // The network type which rosetta is running on. Can be 'test' or 'main'
         this.ethCallFromAddress = Optional.ofNullable(System.getenv("ETH_CALL_FROM_ADDRESS")).orElse("0x00c8f107a09cd4f463afc2f1e6e5bf6022ad4600");
-        this.proposalJsonDataPath = Optional.ofNullable(System.getenv("PROPOSAL_JSON_DATA_PATH")).orElse("server/src/main/resources/");
+        this.proposalJsonDataPath = Optional.ofNullable(System.getenv("PROPOSAL_JSON_DATA_PATH")).orElse(Paths.get(System.getProperty("user.dir")).getParent().getParent().toString() + "/");
         this.proposalJsonDataFileName = Optional.ofNullable(System.getenv("PROPOSAL_JSON_DATA_FILE_NAME")).orElse("active_proposal.json");
     }
 
