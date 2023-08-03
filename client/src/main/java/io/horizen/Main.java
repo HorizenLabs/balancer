@@ -14,11 +14,11 @@ import java.util.Map;
 import java.util.Random;
 
 public class Main {
-    private static final String LOCAL_HTTP_SERVER_URL = "https://localhost:8080/"; // change if https not used
+    private static final String LOCAL_HTTP_SERVER_URL = "http://localhost:5000/"; // change if https not used
     private static final String REMOTE_HTTP_SERVER_URL = "http://zendao-tn-1.de.horizenlabs.io:5000/";
 
     private static final String HTTP_SERVER_URL = LOCAL_HTTP_SERVER_URL;
-    // private static final String HTTP_SERVER_URL = REMOTE_HTTP_SERVER_URL;
+    //private static final String HTTP_SERVER_URL = REMOTE_HTTP_SERVER_URL;
 
     private static final Map<String, Object> CREATE_PROPOSAL_MOCK = new HashMap<>();
     private static final Map<String, Object> GET_VOTING_POWER_MOCK = new HashMap<>();
@@ -35,7 +35,7 @@ public class Main {
         GET_VOTING_POWER_MOCK.put("options", Map.of("url", HTTP_SERVER_URL + "api/v1/getVotingPower", "type", "api-post"));
         GET_VOTING_POWER_MOCK.put("network", "80001");
         GET_VOTING_POWER_MOCK.put("snapshot", 34522768);
-        GET_VOTING_POWER_MOCK.put("addresses", new String[]{"0xf43F35c1A3E36b5Fb554f5E830179cc460c35858"});
+        GET_VOTING_POWER_MOCK.put("addresses", new String[]{"0x92f375E3f733b010E7620FBed122B9d96f73c6CF"});
 
         ADD_OWNERSHIP_MOCK.put("owner", "0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959");
         ADD_OWNERSHIP_MOCK.put("address", "ztWBHD2Eo6uRLN6xAYxj8mhmSPbUYrvMPwt");
