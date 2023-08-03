@@ -41,7 +41,7 @@ public class BalancerTest {
 
     @Test
     public void testCreateProposal() throws IOException {
-        URL url = new URL("http://localhost:8080/api/v1/createProposal");
+        URL url = new URL("http://localhost:5000/api/v1/createProposal");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
@@ -59,7 +59,7 @@ public class BalancerTest {
 
     @Test
     public void testGetProposals() throws IOException {
-        URL url = new URL("http://localhost:8080/api/v1/getProposals");
+        URL url = new URL("http://localhost:5000/api/v1/getProposals");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
 
@@ -71,7 +71,7 @@ public class BalancerTest {
 
     @Test
     public void testGetOwnerships() throws IOException {
-        URL url = new URL("http://localhost:8080/api/v1/getOwnerships");
+        URL url = new URL("http://localhost:5000/api/v1/getOwnerships");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
 
@@ -88,7 +88,7 @@ public class BalancerTest {
         addOwnershipData.put("owner", "0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959");
         addOwnershipData.put("address", "ztWBHD2Eo6uRLN6xAYxj8mhmSPbUYrvMPwt");
 
-        URL url = new URL("http://localhost:8080/api/v1/addOwnership");
+        URL url = new URL("http://localhost:5000/api/v1/addOwnership");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
 
@@ -118,7 +118,7 @@ public class BalancerTest {
 
     @Test
     public void testVotingPower() throws IOException {
-        URL url = new URL("http://localhost:8080/api/v1/getVotingPower?network=80001&snapshot=34522768&addresses=0xf43F35c1A3E36b5Fb554f5E830179cc460c35858&options=api-post&options=https://localhost:8080/api/v1/getVotingPower");
+        URL url = new URL("http://localhost:5000/api/v1/getVotingPower?network=80001&snapshot=34522768&addresses=0xf43F35c1A3E36b5Fb554f5E830179cc460c35858&options=api-post&options=https://localhost:5000/api/v1/getVotingPower");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("GET");
 
@@ -138,7 +138,7 @@ public class BalancerTest {
 
     @Test
     public void testGetOwnerScAddresses() throws IOException {
-        URL url = new URL("http://localhost:8080/api/v1/getOwnerScAddresses");
+        URL url = new URL("http://localhost:5000/api/v1/getOwnerScAddresses");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
 
