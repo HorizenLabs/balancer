@@ -24,7 +24,9 @@
 
     <Loggers>
         <Root level="all">
-            <AppenderRef ref="fileLog" level="all"/>
+            <AppenderRef ref="fileLog" level="info"/>
+            <AppenderRef ref="fileLog" level="warn"/>
+            <AppenderRef ref="fileLog" level="error"/>
             <AppenderRef ref="Console" level="info"/>
             <AppenderRef ref="Console" level="warn"/>
             <AppenderRef ref="Console" level="error"/>
