@@ -25,9 +25,9 @@ public class Main {
     public static void main(String[] args) {
         Settings settings = new Settings();
 
-        setupSSL();
+        //setupSSL();
 
-        port(8080); //change for different port
+        port(5000); //change for different port
 
         checkMocks(settings);
 
