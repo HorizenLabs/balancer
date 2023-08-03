@@ -25,7 +25,7 @@ public class Main {
     public static void main(String[] args) {
         Settings settings = new Settings();
 
-        //setupSSL();
+        setupSSL(); //turn off for local dev
 
         port(5000); //change for different port
 
@@ -48,11 +48,11 @@ public class Main {
     }
 
     private static void setupSSL() {
-        String keystoreFilePath = "keystore/keystore.p12";
-        String keystorePassword = "mypassword";
+        String keystoreFilePath = "/home/ddrvar/keystore/keystore.jks";
+        String keystorePassword = "changeit";
 
         try {
-            KeyStore keystore =  KeyStore.getInstance("PKCS12");
+            KeyStore keystore =  KeyStore.getInstance("JKS");
             keystore.load(new FileInputStream(keystoreFilePath), keystorePassword.toCharArray());
             KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             keyManagerFactory.init(keystore, keystorePassword.toCharArray());

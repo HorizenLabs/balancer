@@ -46,6 +46,7 @@ public class Balancer {
     private static final Logger log =  LoggerFactory.getLogger(Balancer.class);
 
     public void setupRoutes() {
+        get("/hello", (req, res) -> "Hello, World!");
         get("/api/v1/getVotingPower", this::getVotingPower);
         post("/api/v1/getOwnerships", this::getOwnerships);
         post("/api/v1/getProposals", this::getProposals);
