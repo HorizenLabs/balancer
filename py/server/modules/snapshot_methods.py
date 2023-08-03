@@ -1,16 +1,16 @@
 import json
 import logging
 import re
-import string
 from threading import Lock
 
 import base58
+from eth_utils import add_0x_prefix
 
 from .balancerError import AddOwnershipError
-from .definitions import MOCK_MC_ADDRESS_MAP, MOCK_NSC, MOCK_OWNER_SC_ADDR_LIST
+from .definitions import MOCK_MC_ADDRESS_MAP, MOCK_NSC
 from .nsc_methods import get_nsc_ownerships, get_nsc_owner_sc_addresses
 from .proposal import VotingProposal
-from .util_methods import write_proposal_to_file, print_log, warn_if_proposal_not_active
+from .util_methods import write_proposal_to_file, print_log, warn_if_proposal_not_active, check_sc_address
 from dateutil import parser
 
 active_proposal = VotingProposal(in_id=None)
@@ -110,10 +110,11 @@ def add_mock_ownership_entry(data_json):
     except ValueError as e:
         response = AddOwnershipError("Address not valid: " + str(e)).get()
     else:
-        if len(new_owner) != 42 or not all(c in string.hexdigits for c in new_owner[2:]):
-            response = AddOwnershipError("Invalid owner string length != 42 or not an hex string").get()
+        try:
+            check_sc_address(new_owner)
+        except Exception as e:
+            response = AddOwnershipError("Invalid sc address string: " + new_owner + ", exception: " + str(e)).get()
         else:
-
             if new_owner in MOCK_MC_ADDRESS_MAP.keys():
                 # this is actually a reference
                 addresses = MOCK_MC_ADDRESS_MAP[data_json['owner']]
@@ -129,16 +130,23 @@ def add_mock_ownership_entry(data_json):
     return response
 
 
-def get_mc_address_map(sc_address=None):
+def get_mc_address_map(sc_address):
+    check_sc_address(sc_address)
     if MOCK_NSC:
-        return MOCK_MC_ADDRESS_MAP
+        # build a mocked map for this address
+        key = add_0x_prefix(sc_address)
+        value = MOCK_MC_ADDRESS_MAP.get(key)
+        if value is None:
+            return {}
+        else:
+            return {key: value}
     else:
         return get_nsc_ownerships(sc_address)
 
 
 def get_owner_sc_addr_list():
     if MOCK_NSC:
-        return MOCK_OWNER_SC_ADDR_LIST
+        return list(MOCK_MC_ADDRESS_MAP.keys())
     else:
         return get_nsc_owner_sc_addresses()
 

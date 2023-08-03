@@ -1,9 +1,11 @@
 import json
+
 import requests
 from eth_abi import decode
 from eth_utils import remove_0x_prefix, to_checksum_address, function_signature_to_4byte_selector, encode_hex
+
 from .definitions import NSC_URL, ETH_CALL_FROM_ADDRESS
-from .util_methods import print_outgoing, print_incoming, check_sc_address, hex_str_to_bytes, print_log
+from .util_methods import print_outgoing, print_incoming, hex_str_to_bytes, print_log
 
 
 # not used; useful for calling http api endpoint
@@ -17,17 +19,12 @@ def get_nsc_ownerships1(sc_address=None):
     return response.json()['result']['keysOwnership']
 
 
-# invokes eth_call RPC
-def get_nsc_ownerships(sc_address=None):
-    if sc_address is None:
-        method = 'getAllKeyOwnerships()'
-        abi_str = encode_hex(function_signature_to_4byte_selector(method))
-    else:
-        sc_address = remove_0x_prefix(sc_address)
-        check_sc_address(sc_address)
-        method = 'getKeyOwnerships(address)'
-        abi_method_str = encode_hex(function_signature_to_4byte_selector(method))
-        abi_str = abi_method_str + "000000000000000000000000" + sc_address
+# invokes eth_call RPC, assumes the caller has checked the sc address format
+def get_nsc_ownerships(sc_address):
+
+    method = 'getKeyOwnerships(address)'
+    abi_method_str = encode_hex(function_signature_to_4byte_selector(method))
+    abi_str = abi_method_str + "000000000000000000000000" + remove_0x_prefix(sc_address)
 
     request_body = {
         "jsonrpc": "2.0",

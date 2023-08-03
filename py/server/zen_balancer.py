@@ -30,14 +30,12 @@ def api_server():
 
         if 'scAddress' not in cmd_input:
             ret = GenericError("Missing sc address in input").get()
-        elif MOCK_NSC:
-            ret = MOCK_MC_ADDRESS_MAP
         else:
             sc_address = cmd_input['scAddress']
             try:
                 ret = get_mc_address_map(sc_address)
             except Exception as e:
-                ret = GetOwnershipError("sc address: " + sc_address + " - Exception: " + str(e)).get()
+                ret = GetOwnershipError("sc address: " + str(sc_address) + " - Exception: " + str(e)).get()
 
         print_outgoing("BalancerApiServer", "/api/v1/getOwnerships", ret)
 

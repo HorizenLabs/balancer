@@ -28,7 +28,7 @@ def get_address_balance(sc_address):
         mc_address_map = get_mc_address_map(sc_address)
     except Exception as e:
         return GenericError(
-            "Can not get mc addresses associated to sc address: " + sc_address + " - Exception: " + str(e)).get()
+            "Can not get mc addresses associated to sc address: " + str(sc_address) + " - Exception: " + str(e)).get()
 
     if sc_address in mc_address_map:
         mc_addresses = mc_address_map[sc_address]
@@ -40,9 +40,9 @@ def get_address_balance(sc_address):
 
         bl_height = int(prop.block_height)
 
-        # Call Rosetta endpoint /account/balance
-        # In the query we use just the block height (omitting the hash) in the 'block_identifier', this is for handling also
-        # the case of a chain reorg which reverts the block whose hash was red when the proposal has been received
+        # Call Rosetta endpoint /account/balance In the query we use just the block height (omitting the hash) in the
+        # 'block_identifier', this is for handling also the case of a chain reorg which reverts the block whose hash
+        # was red when the proposal has been received
         for mc_address in mc_addresses:
             request_body = ROSETTA_REQUEST_NETWORK_STATUS_TEMPLATE
             request_body["account_identifier"] = {"address": mc_address, "metadata": {}}
