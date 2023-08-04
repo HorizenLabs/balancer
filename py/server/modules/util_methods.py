@@ -72,7 +72,7 @@ def write_proposal_to_file(prop):
 
 
 def warn_if_proposal_not_active(prop):
-    time_now = datetime.datetime.now()
+    time_now = datetime.datetime.now(datetime.timezone.utc)
     if prop.fromTime > time_now:
         logging.warning(
             "######################################################################################\n" +
