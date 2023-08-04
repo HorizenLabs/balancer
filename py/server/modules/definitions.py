@@ -6,6 +6,18 @@ def get_project_root() -> Path:
     return Path(__file__).parent.parent
 
 
+# Running on local host (for testing/debug)
+RUNNING_ON_LOCALHOST = os.getenv("RUNNING_ON_LOCALHOST", 'False').lower() in ('true', '1', 'y', 'yes')
+
+# Listening on HTTP (not on HTTPS). This option should be set to true if USING_WSGI_PROXY
+LISTENING_ON_HTTP = os.getenv("LISTENING_ON_HTTP", 'False').lower() in ('true', '1', 'y', 'yes')
+
+# port where balancer is listening
+BALANCER_PORT = os.getenv("BALANCER_PORT", 5000)
+
+# Balancer is using a wsgi proxy (nginx)
+USING_WSGI_PROXY = os.getenv("USING_WSGI_PROXY", 'False').lower() in ('true', '1', 'y', 'yes')
+
 # Native smart contract is reachable via this end point
 NSC_URL = str(os.getenv("NSC_URL", "http://zendao-tn-1.de.horizenlabs.io:8200/"))
 

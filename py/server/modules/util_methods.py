@@ -65,6 +65,8 @@ def write_proposal_to_file(prop):
     try:
         with open(file_name, 'w') as outfile:
             outfile.write(json_object)
+        logging.info(
+            "Proposal written to file: " + file_name + "\n" + json_object)
     except FileNotFoundError as e:
         logging.warning("Warning: " + str(e))
     except Exception as e:

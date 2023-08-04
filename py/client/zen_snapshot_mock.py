@@ -37,8 +37,8 @@ CREATE_PROPOSAL_MOCK = {
 }
 '''
 CREATE_PROPOSAL_MOCK = {
-    "Body": "HAL new format of notification\nProposal Created\nStarts on: 28 Jul 23 13:27 UTC\nEnds on: 31 Jul 23 13:27 UTC\nAuthor: 0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959",
-    "ProposalID": "proposal/0x6e142d2c78802c3e56194fe7d4e6f49b760b7dea26d379d84e417e6c0ad09009",
+    "Body": "HAL new format of notification\nProposal Created\nStarts on: 4 Aug 23 12:27 UTC\nEnds on: 31 Aug 23 13:27 UTC\nAuthor: 0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959",
+    "ProposalID": "proposal/0x33142d2c78802c3e56194fe7d4e6f49b760b7dea26d379d84e417e6c0ad09009",
     "ProposalEvent": "proposal/created",
     "ProposalSpace": "victorbibiano.eth",
     "ProposalExpire": 0

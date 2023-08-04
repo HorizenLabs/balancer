@@ -5,12 +5,9 @@ from modules.snapshot_methods import add_mock_ownership_entry, \
     get_mc_address_map, store_proposal_data, \
     proposal_dict, get_owner_sc_addr_list, init_active_proposal
 from modules.rosetta_methods import get_mainchain_tip, get_address_balance
-from modules.definitions import MOCK_NSC, MOCK_MC_ADDRESS_MAP, check_mocks
+from modules.definitions import MOCK_NSC, MOCK_MC_ADDRESS_MAP, check_mocks, RUNNING_ON_LOCALHOST, LISTENING_ON_HTTP, \
+    BALANCER_PORT, USING_WSGI_PROXY
 from modules.util_methods import print_incoming, print_outgoing, read_proposal_from_file
-
-
-# see below for proxy usage
-# from werkzeug.middleware.proxy_fix import ProxyFix
 
 from modules.balancerError import GetOwnershipError, GetOwnerScAddressesError, \
     CreateProposalError, AddOwnershipError, GenericError
@@ -19,8 +16,10 @@ from modules.balancerError import GetOwnershipError, GetOwnerScAddressesError, \
 def api_server():
     app = Flask(__name__)
 
-    # should we use a proxy
-    # app.wsgi_app = ProxyFix(app.wsgi_app)
+    if USING_WSGI_PROXY:
+        # if we use a proxy
+        from werkzeug.middleware.proxy_fix import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app)
 
     @app.route('/api/v1/getOwnerships', methods=['POST'])
     def get_ownerships():
@@ -135,23 +134,25 @@ def api_server():
     if prop is not None:
         init_active_proposal(prop)
 
-    # listen on http port
-    # ---------------------
-    # app.run(host="0.0.0.0", port=5000)
+    if LISTENING_ON_HTTP:
+        # listen on http port
+        # ---------------------
+        app.run(host="0.0.0.0", port=BALANCER_PORT)
+    else:
+        # listen on https port
+        # ---------------------
+        if RUNNING_ON_LOCALHOST:
+            # localhost (cert generated via openssl, see:
+            # https://kracekumar.com/post/54437887454/ssl-for-flask-local-development/
+            context = ('/tmp/server.crt', '/tmp/server.key')  # certificate and key files
+        else:
+            # official server (certificates generated there via certbot)
+            # $ export FQDN="zendao-tn-1.de.horizenlabs.io"
+            # $ sudo certbot certonly  -n --agree-tos --register-unsafely-without-email --standalone -d $FQDN
+            context = ('/etc/letsencrypt/archive/zendao-tn-1.de.horizenlabs.io/fullchain1.pem',
+                       '/etc/letsencrypt/archive/zendao-tn-1.de.horizenlabs.io/privkey1.pem')
 
-    # listen on https port
-    # ---------------------
-    # localhost (cert generated via openssl, see:
-    # https://kracekumar.com/post/54437887454/ssl-for-flask-local-development/
-    # context = ('/tmp/server.crt', '/tmp/server.key')  # certificate and key files
-
-    # official server (certificates generated there via certbot)
-    # $ export FQDN="zendao-tn-1.de.horizenlabs.io"
-    # $ sudo certbot certonly  -n --agree-tos --register-unsafely-without-email --standalone -d $FQDN
-    context = ('/etc/letsencrypt/archive/zendao-tn-1.de.horizenlabs.io/fullchain1.pem',
-               '/etc/letsencrypt/archive/zendao-tn-1.de.horizenlabs.io/privkey1.pem')
-
-    app.run(host="0.0.0.0", port=5000, ssl_context=context)
+        app.run(host="0.0.0.0", port=BALANCER_PORT, ssl_context=context)
 
 
 if __name__ == '__main__':
