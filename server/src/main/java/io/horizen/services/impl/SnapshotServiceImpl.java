@@ -3,7 +3,7 @@ package io.horizen.services.impl;
 import com.google.inject.Inject;
 import io.horizen.config.Settings;
 import io.horizen.data_types.VotingProposal;
-import io.horizen.exception.OwnerStringException;
+import io.horizen.exception.ScAddressFormatException;
 import io.horizen.exception.OwnershipAlreadySetException;
 import io.horizen.helpers.Mocks;
 import io.horizen.helpers.Helper;
@@ -48,8 +48,15 @@ public class SnapshotServiceImpl implements SnapshotService {
     }
 
     public Map<String, List<String>> getMcAddressMap(String scAddress) throws Exception {
-        if (settings.getMockNsc())
-            return Mocks.mockMcAddressMap;
+        scAddress = Helper.checkScAddress(scAddress);
+
+        if (settings.getMockNsc()) {
+            if (!scAddress.startsWith("0x"))
+                scAddress = "0x" + scAddress;
+            Map<String, List<String>> ret = new HashMap<>();
+            ret.put(scAddress, Mocks.mockMcAddressMap.get(scAddress));
+            return ret;
+        }
         else
             return nscService.getNscOwnerships(scAddress);
     }
@@ -61,19 +68,16 @@ public class SnapshotServiceImpl implements SnapshotService {
             return nscService.getNscOwnerScAddresses();
     }
 
-    public void addOwnershipEntry(String address, String owner) throws AddressFormatException, OwnerStringException, OwnershipAlreadySetException {
+    public void addMockOwnershipEntry(String address, String owner) throws AddressFormatException, ScAddressFormatException, OwnershipAlreadySetException {
         Base58.decodeChecked(address);
+        Helper.checkScAddress(owner);
 
-        if (owner.length() != 42  || !owner.substring(2).matches("[0-9A-Fa-f]+"))
-            throw new OwnerStringException();
-        else {
-            if (Mocks.mockMcAddressMap.containsKey(owner)) {
-                List<String> addresses = Mocks.mockMcAddressMap.get(owner);
-                if (addresses.contains(address))
-                    throw new OwnershipAlreadySetException();
-                else
-                    addresses.add(address);
-            }
+        if (Mocks.mockMcAddressMap.containsKey(owner)) {
+            List<String> addresses = Mocks.mockMcAddressMap.get(owner);
+            if (addresses.contains(address))
+                throw new OwnershipAlreadySetException();
+            else
+                addresses.add(address);
         }
     }
 

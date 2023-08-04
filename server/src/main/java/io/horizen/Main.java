@@ -25,9 +25,12 @@ public class Main {
     public static void main(String[] args) {
         Settings settings = new Settings();
 
-        setupSSL(); //turn off for local dev
+        if (settings.getRunningOnLocalhost() && !settings.getListeningOnHTTP())
+            setupSSL(false);
+        else if (!settings.getRunningOnLocalhost() && !settings.getListeningOnHTTP())
+            setupSSL(true);
 
-        port(5000); //change for different port
+        port(settings.getBalancerPort());
 
         checkMocks(settings);
 
@@ -47,12 +50,12 @@ public class Main {
         }));
     }
 
-    private static void setupSSL() {
-        String keystoreFilePath = "/home/ddrvar/keystore/keystore.jks";
-        String keystorePassword = "changeit";
+    private static void setupSSL(boolean isServer) {
+        String keystoreFilePath = isServer ? "/home/ddrvar/keystore/keystore.jks" : "keystore/keystore.p12";
+        String keystorePassword = isServer ? "changeit" : "mypassword";
 
         try {
-            KeyStore keystore =  KeyStore.getInstance("JKS");
+            KeyStore keystore =  isServer ? KeyStore.getInstance("JKS") : KeyStore.getInstance("PKCS12");
             keystore.load(new FileInputStream(keystoreFilePath), keystorePassword.toCharArray());
             KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             keyManagerFactory.init(keystore, keystorePassword.toCharArray());

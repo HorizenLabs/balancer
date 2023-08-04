@@ -7,6 +7,7 @@ import io.horizen.helpers.MyGsonManager;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 public class VotingProposal {
     @SerializedName("ID")
@@ -57,7 +58,9 @@ public class VotingProposal {
 
     public String toJson() {
         JsonObject json = new JsonObject();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yy HH:mm z");
+        TimeZone utcTimeZone = TimeZone.getTimeZone("UTC");
+        sdf.setTimeZone(utcTimeZone);
 
         JsonObject proposalObject = new JsonObject();
         proposalObject.add("ID", new JsonPrimitive(id));

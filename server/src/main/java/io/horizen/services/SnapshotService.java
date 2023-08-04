@@ -14,7 +14,7 @@ public interface SnapshotService {
 
     List<String> getOwnerScAddrList() throws Exception;
 
-    void addOwnershipEntry(String address, String owner) throws Exception;
+    void addMockOwnershipEntry(String address, String owner) throws Exception;
 
     Map<String, List<String>> getMcAddressMap(String scAddress) throws Exception;
 

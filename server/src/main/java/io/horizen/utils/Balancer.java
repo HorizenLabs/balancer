@@ -8,7 +8,7 @@ import io.horizen.config.Settings;
 import io.horizen.data_types.ChainTip;
 import io.horizen.data_types.VotingProposal;
 import io.horizen.exception.GetMcAddressMapException;
-import io.horizen.exception.OwnerStringException;
+import io.horizen.exception.ScAddressFormatException;
 import io.horizen.exception.OwnershipAlreadySetException;
 import io.horizen.helpers.Mocks;
 import io.horizen.helpers.Helper;
@@ -76,7 +76,7 @@ public class Balancer {
 
         if (settings.getMockNsc()) {
             try {
-                snapshotService.addOwnershipEntry(address, owner);
+                snapshotService.addMockOwnershipEntry(address, owner);
             }
             catch (AddressFormatException ex) {
                 int code = 102;
@@ -85,7 +85,7 @@ public class Balancer {
                 log.error("Error in add ownership " + ex);
                 return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
             }
-            catch (OwnerStringException ex) {
+            catch (ScAddressFormatException ex) {
                 int code = 103;
                 String description = "Can not add ownership";
                 String detail = "Invalid owner string length != 42 or not an hex string";
@@ -313,31 +313,29 @@ public class Balancer {
         res.type("application/json");
         log.info("getOwnerships request with data " + req.body());
 
-        if (settings.getMockNsc())
-            ret = Mocks.mockMcAddressMap;
-        else {
-            String scAddress;
-            try {
-                JsonObject jsonObject = MyGsonManager.getGson().fromJson(req.body(), JsonObject.class);
-                scAddress = jsonObject.get("scAddress").getAsString();
-            }
-            catch (Exception ex) {
-                int code = 301;
-                String description = "Could not get ownership - no scAddress found";
-                String detail = "An exception occurred: " + ex;
-                log.error("Error in getOwnerships - no scAddress found" + ex);
-                return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
-            }
-            try {
-                ret = snapshotService.getMcAddressMap(scAddress);
-            } catch (Exception ex) {
-                int code = 301;
-                String description = "Could not get ownership for sc address:" + scAddress;
-                String detail = "An exception occurred: " + ex;
-                log.error("Error in getOwnerships " + ex);
-                return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
-            }
+
+        String scAddress;
+        try {
+            JsonObject jsonObject = MyGsonManager.getGson().fromJson(req.body(), JsonObject.class);
+            scAddress = jsonObject.get("scAddress").getAsString();
         }
+        catch (Exception ex) {
+            int code = 301;
+            String description = "Could not get ownership - no scAddress found";
+            String detail = "An exception occurred: " + ex;
+            log.error("Error in getOwnerships - no scAddress found" + ex);
+            return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+        }
+        try {
+            ret = snapshotService.getMcAddressMap(scAddress);
+        } catch (Exception ex) {
+            int code = 301;
+            String description = "Could not get ownership for sc address:" + scAddress;
+            String detail = "An exception occurred: " + ex;
+            log.error("Error in getOwnerships " + ex);
+            return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+        }
+
         log.info("getOwnerships response with data " + ret);
 
         return gson.toJson(ret);

@@ -23,7 +23,6 @@ import java.net.HttpURLConnection;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.regex.Pattern;
 
 public class NscServiceImpl implements NscService {
     private final Settings settings;
@@ -37,20 +36,13 @@ public class NscServiceImpl implements NscService {
         String method;
         String abiString;
 
-        // Remove the "0x" prefix
-        if (scAddress.startsWith("0x"))
-            scAddress = scAddress.substring(2);
-
-        if (scAddress.length() != 40 || !Pattern.matches("[0-9A-Fa-f]+", scAddress))
-            throw new Exception("Invalid sc address length: {}, expected 40");
-
         method = "getKeyOwnerships(address)";
         byte[] selector = Arrays.copyOf(Hash.sha3(method.getBytes()),4);
         String abiMethodString = "0x" + Numeric.toHexStringNoPrefix(selector);
         abiString = abiMethodString + "000000000000000000000000" + scAddress;
 
         String requestBody = buildNscRequestBody(abiString);
-        HttpURLConnection connection = Helper.sendRequestWithAuth(settings.getNscUrl() + "ethv1", requestBody, "user", "Horizen");
+        HttpURLConnection connection = Helper.sendRequestWithAuth(settings.getNscUrl() + settings.getNscUrlPostfix(), requestBody);
 
         if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new Exception(connection.getResponseCode() + " " + connection.getResponseMessage());
@@ -74,7 +66,7 @@ public class NscServiceImpl implements NscService {
         String abiString = "0x" + Numeric.toHexStringNoPrefix(selector);
 
         String requestBody = buildNscRequestBody(abiString);
-        HttpURLConnection connection = Helper.sendRequestWithAuth(settings.getNscUrl() + "ethv1", requestBody, "user", "Horizen");
+        HttpURLConnection connection = Helper.sendRequestWithAuth(settings.getNscUrl() + settings.getNscUrlPostfix(), requestBody);
 
         if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new Exception("Problem with getKeyOwnerScAddresses()");

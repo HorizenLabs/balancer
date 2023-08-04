@@ -130,17 +130,12 @@ public class RosettaServiceImpl implements RosettaService {
                 return 123456789.0;
             }
 
-            int blockHeight = snapshotService.getActiveProposal().getBlockHeight();
-            String blockHash = snapshotService.getActiveProposal().getBlockHash();
-
-            String actualBlockHash = getMainchainBlockHash(blockHeight);
-            if (!actualBlockHash.equals(blockHash)) {
-                log.info("MC block hash mismatch. Using hash=" + actualBlockHash + " (instead of " + blockHash + ") for height=" + blockHeight);
-                blockHash = actualBlockHash;
-            }
+            // Call Rosetta endpoint /account/balance In the query we use just the block height (omitting the hash) in the
+            // 'block_identifier', this is for handling also the case of a chain reorg which reverts the block whose hash
+            // was red when the proposal has been received
 
             for (String mcAddress : mcAddresses) {
-                String body = buildRosettaRequestBodyForNetworkStatus(mcAddress, blockHash);
+                String body = buildRosettaRequestBodyForNetworkStatus(mcAddress);
                 HttpURLConnection connection = Helper.sendRequest(settings.getRosettaUrl() + "account/balance", body);
 
                 if(connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
@@ -162,7 +157,7 @@ public class RosettaServiceImpl implements RosettaService {
     }
 
 
-    private String buildRosettaRequestBodyForNetworkStatus(String mcAddress, String blockHash) {
+    private String buildRosettaRequestBodyForNetworkStatus(String mcAddress) {
         JsonObject rosettaRequestTemplate = new JsonObject();
         rosettaRequestTemplate.addProperty("blockchain", "Zen");
         rosettaRequestTemplate.addProperty("network", settings.getNetwork());
@@ -177,7 +172,6 @@ public class RosettaServiceImpl implements RosettaService {
 
         JsonObject blockIdentifier = new JsonObject();
         blockIdentifier.addProperty("index", snapshotService.getActiveProposal().getBlockHeight());
-        blockIdentifier.addProperty("hash", blockHash);
         requestBody.add("block_identifier", blockIdentifier);
 
         return MyGsonManager.getGson().toJson(requestBody);

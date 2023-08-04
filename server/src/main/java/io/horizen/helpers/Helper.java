@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.horizen.config.Settings;
 import io.horizen.data_types.VotingProposal;
+import io.horizen.exception.ScAddressFormatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +17,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 public class Helper {
 
@@ -26,7 +30,8 @@ public class Helper {
     private static Settings settings;
 
     public static void initialize(Settings mySettings) {
-        settings = mySettings;
+        if (settings == null)
+            settings = mySettings;
     }
 
     public static HttpURLConnection sendRequest(String url, String data) throws Exception {
@@ -57,14 +62,14 @@ public class Helper {
         return jsonObject;
     }
 
-    public static HttpURLConnection sendRequestWithAuth(String url, String data, String username, String password) throws Exception {
+    public static HttpURLConnection sendRequestWithAuth(String url, String data) throws Exception {
         URL endpointUrl = new URL(url);
         HttpURLConnection connection = (HttpURLConnection) endpointUrl.openConnection();
 
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
 
-        String auth = username + ":" + password;
+        String auth = settings.getUsername() + ":" + settings.getPassword();
         String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
         String authHeader = "Basic " + encodedAuth;
 
@@ -90,6 +95,8 @@ public class Helper {
         try (FileWriter fileWriter = new FileWriter(filePath)) {
             fileWriter.write(jsonProposal);
         }
+
+        log.info("Proposal written to file: " + filePath + "\n" + jsonProposal);
     }
 
     public static VotingProposal readProposalFromFile() {
@@ -122,7 +129,7 @@ public class Helper {
         Date fromTime;
         Date toTime;
         try {
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yy HH:mm z");
             String fromTimeString = proposalObject.get("from").getAsString();
             String toTimeString = proposalObject.get("to").getAsString();
             fromTime = sdf.parse(fromTimeString);
@@ -138,18 +145,29 @@ public class Helper {
     }
 
     public static void warnIfProposalNotActive(VotingProposal votingProposal) {
-        Date timeNow = new Date();
+        Date timeNowUtc = Date.from(ZonedDateTime.now(ZoneOffset.UTC).toInstant());
 
-        if (votingProposal.getFromTime().after(timeNow)) {
+        if (votingProposal.getFromTime().after(timeNowUtc)) {
             log.warn("######################################################################################\n" +
-                    "Proposal is not started yet!\nTime now: " + timeNow +
+                    "Proposal is not started yet!\nTime now: " + timeNowUtc +
                     ", proposal starts at time: " + votingProposal.getFromTime() + "\n" +
                     "######################################################################################");
-        } else if (votingProposal.getToTime().before(timeNow)) {
+        } else if (votingProposal.getToTime().before(timeNowUtc)) {
             log.warn("######################################################################################\n" +
-                    "Proposal is closed!\nTime now: " + timeNow +
+                    "Proposal is closed!\nTime now: " + timeNowUtc +
                     ", proposal closed at time: " + votingProposal.getToTime() + "\n" +
                     "######################################################################################");
         }
+    }
+
+    public static String checkScAddress(String scAddress) throws ScAddressFormatException {
+        // Remove the "0x" prefix
+        if (scAddress.startsWith("0x"))
+            scAddress = scAddress.substring(2);
+
+        if (scAddress.length() != 40 || !Pattern.matches("[0-9A-Fa-f]+", scAddress))
+            throw new ScAddressFormatException("Invalid sc address length: {}, expected 40");
+
+        return scAddress;
     }
 }
