@@ -8,7 +8,9 @@ import io.horizen.helpers.Mocks;
 import io.horizen.helpers.MyGsonManager;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import spark.Spark;
 import spark.utils.IOUtils;
 
@@ -18,6 +20,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +28,7 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BalancerTest {
 
     @BeforeClass
@@ -71,19 +75,34 @@ public class BalancerTest {
 
     @Test
     public void testGetOwnerships() throws IOException {
+        Map<String, Object> requestData = new HashMap<>();
+        requestData.put("scAddress", "0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959");
+
         URL url = new URL("http://localhost:5000/api/v1/getOwnerships");
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
         connection.setRequestMethod("POST");
+        connection.setDoOutput(true);
+        connection.setRequestProperty("Content-Type", "application/json");
+
+        try (OutputStream outputStream = connection.getOutputStream()) {
+            outputStream.write(MyGsonManager.getGson().toJson(requestData).getBytes());
+        }
 
         String response = IOUtils.toString(connection.getInputStream());
         Type mapType = new TypeToken<Map<String, List<String>>>() {}.getType();
         Map<String, List<String>> resultMap = MyGsonManager.getGson().fromJson(response, mapType);
 
-        assertEquals(Mocks.mockMcAddressMap, resultMap);
+        Map<String, List<String>> expectedMap = new HashMap<>();
+        List<String> addressList = new ArrayList<>();
+        addressList.add("ztbX9Kg53BYK8iJ8cydJp3tBYcmzT8Vtxn7");
+        addressList.add("ztUSSkdLdgCG2HnwjrEKorauUR2JXV26u7v");
+        expectedMap.put("0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959",addressList);
+
+        assertEquals(expectedMap, resultMap);
     }
 
     @Test
-    public void testAddOwnership() throws IOException {
+    public void testXAddOwnership() throws IOException { // X in the name because the test are run in NAME_ASCENDING order which is crucial
         Map<String, Object> addOwnershipData = new HashMap<>();
         addOwnershipData.put("owner", "0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959");
         addOwnershipData.put("address", "ztWBHD2Eo6uRLN6xAYxj8mhmSPbUYrvMPwt");
