@@ -1,10 +1,10 @@
 package io.horizen.services;
 
-import io.horizen.data_types.ChainTip;
+import io.horizen.data_types.MainchainTip;
 
 public interface RosettaService {
 
-    ChainTip getMainchainTip() throws Exception;
+    MainchainTip getMainchainTip() throws Exception;
 
     Double getAddressBalance(String scAddress) throws Exception;
 

@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.inject.Inject;
 import io.horizen.config.Settings;
-import io.horizen.data_types.ChainTip;
+import io.horizen.data_types.MainchainTip;
 import io.horizen.exception.GetMcAddressMapException;
 import io.horizen.helpers.Helper;
 import io.horizen.helpers.Mocks;
@@ -37,9 +37,9 @@ public class RosettaServiceImpl implements RosettaService {
         this.settings = settings;
     }
 
-    public ChainTip getMainchainTip() throws Exception {
+    public MainchainTip getMainchainTip() throws Exception {
         if (settings.getMockRosetta())
-            return new ChainTip(Mocks.MOCK_ROSETTA_BLOCK_HEIGHT, Mocks.MOCK_ROSETTA_BLOCK_HASH);
+            return new MainchainTip(Mocks.MOCK_ROSETTA_BLOCK_HEIGHT, Mocks.MOCK_ROSETTA_BLOCK_HASH);
 
         // Call Rosetta endpoint /network/status
         String url = settings.getRosettaUrl() + "network/status";
@@ -60,7 +60,7 @@ public class RosettaServiceImpl implements RosettaService {
                         .get("hash")
                         .getAsString();
 
-                return new ChainTip(chainHeight, bestBlockHash);
+                return new MainchainTip(chainHeight, bestBlockHash);
             }
             else
                 throw new Exception(connection.getResponseCode() + " " + connection.getResponseMessage());

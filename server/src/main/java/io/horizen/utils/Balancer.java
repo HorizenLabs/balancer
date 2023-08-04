@@ -5,7 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.inject.Inject;
 import io.horizen.config.Settings;
-import io.horizen.data_types.ChainTip;
+import io.horizen.data_types.MainchainTip;
 import io.horizen.data_types.VotingProposal;
 import io.horizen.exception.GetMcAddressMapException;
 import io.horizen.exception.ScAddressFormatException;
@@ -217,7 +217,7 @@ public class Balancer {
     }
 
     private String createProposal(Request req, Response res) {
-        ChainTip chainTip;
+        MainchainTip mainchainTip;
         res.type("application/json");
         Gson gson = MyGsonManager.getGson();
         log.info("createProposal request with data " + req.body());
@@ -255,7 +255,7 @@ public class Balancer {
             return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
         }
         try {
-            chainTip = rosettaService.getMainchainTip();
+            mainchainTip = rosettaService.getMainchainTip();
         } catch (Exception ex) {
             int code = 303;
             String description = "Can not create proposal";
@@ -264,7 +264,7 @@ public class Balancer {
             return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
         }
 
-        VotingProposal proposal = new VotingProposal(proposalId, chainTip.getBlockHeight(), chainTip.getBlockHash(), startDate,endDate, author);
+        VotingProposal proposal = new VotingProposal(proposalId, mainchainTip.getBlockHeight(), mainchainTip.getBlockHash(), startDate,endDate, author);
         try {
             snapshotService.storeProposalData(proposal);
         } catch (Exception ex) {

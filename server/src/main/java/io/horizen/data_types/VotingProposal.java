@@ -77,4 +77,16 @@ public class VotingProposal {
     public boolean isNull() {
         return id == null;
     }
+
+    @Override
+    public String toString() {
+        return "VotingProposal{" +
+                "id='" + id + '\'' +
+                ", blockHeight=" + blockHeight +
+                ", blockHash='" + blockHash + '\'' +
+                ", fromTime=" + fromTime +
+                ", toTime=" + toTime +
+                ", author='" + author + '\'' +
+                '}';
+    }
 }

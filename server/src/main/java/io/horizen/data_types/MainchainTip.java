@@ -1,9 +1,9 @@
 package io.horizen.data_types;
 
-public class ChainTip {
+public class MainchainTip {
     private final int blockHeight;
     private final String blockHash;
-    public ChainTip(int height, String hash) {
+    public MainchainTip(int height, String hash) {
         this.blockHeight = height;
         this.blockHash = hash;
     }
@@ -12,5 +12,13 @@ public class ChainTip {
     }
     public String getBlockHash() {
         return blockHash;
+    }
+
+    @Override
+    public String toString() {
+        return "MainchainTip{" +
+                "blockHeight=" + blockHeight +
+                ", blockHash='" + blockHash + '\'' +
+                '}';
     }
 }
