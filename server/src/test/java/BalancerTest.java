@@ -33,8 +33,7 @@ public class BalancerTest {
 
     @BeforeClass
     public static void setUp() {
-        String[] args = {"../server/src/test/java/resources/settings-test.conf"};
-        Main.main(args);
+        Main.main(new String[]{""});
         Spark.awaitInitialization();
     }
 
