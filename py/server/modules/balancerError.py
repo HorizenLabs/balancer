@@ -1,11 +1,13 @@
 class BalancerError(object):
     error_dict = {
+        100: "Generic error",
         101: "Can not add ownership",
         102: "Could not get ownership for given sc address",
         103: "Could not get owner sc addresses",
         104: "Can not create proposal",
         105: "Can not get active proposal",
-        106: "Generic error"
+        106: "Rosetta error",
+        107: "Snapshot error"
     }
 
     def __init__(self, code, detail=""):
@@ -27,6 +29,11 @@ class BalancerError(object):
 
 
 # specific classes helping in getting the right error code
+class GenericError(BalancerError):
+    def __init__(self, detail=""):
+        super().__init__(100, detail)
+
+
 class AddOwnershipError(BalancerError):
     def __init__(self, detail=""):
         super().__init__(101, detail)
@@ -52,6 +59,11 @@ class GetProposalError(BalancerError):
         super().__init__(105, detail)
 
 
-class GenericError(BalancerError):
+class RosettaError(BalancerError):
     def __init__(self, detail=""):
         super().__init__(106, detail)
+
+
+class SnapshotError(BalancerError):
+    def __init__(self, detail=""):
+        super().__init__(107, detail)

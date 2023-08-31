@@ -9,8 +9,8 @@ import urllib3
 # squelch warning due to a cert missing an optional field
 urllib3.disable_warnings(urllib3.exceptions.SubjectAltNameWarning)
 
-# LOCAL_HTTP_SERVER_URL = "http://localhost:5000/"
-LOCAL_HTTP_SERVER_URL = "https://localhost:5000/"
+LOCAL_HTTP_SERVER_URL = "http://localhost:5000/"
+#LOCAL_HTTP_SERVER_URL = "https://localhost:5000/"
 REMOTE_HTTP_SERVER_URL = "https://zendao-tn-1.de.horizenlabs.io:5000/"
 
 #HTTP_SERVER_URL = LOCAL_HTTP_SERVER_URL
@@ -37,8 +37,8 @@ CREATE_PROPOSAL_MOCK = {
 }
 '''
 CREATE_PROPOSAL_MOCK = {
-    "Body": "HAL new format of notification\nProposal Created\nStarts on: 28 Jul 23 13:27 UTC\nEnds on: 31 Jul 23 13:27 UTC\nAuthor: 0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959",
-    "ProposalID": "proposal/0x6e142d2c78802c3e56194fe7d4e6f49b760b7dea26d379d84e417e6c0ad09009",
+    "Body": "HAL new format of notification\nProposal Created\nStarts on: 4 Aug 23 12:27 UTC\nEnds on: 31 Aug 23 13:27 UTC\nAuthor: 0xA0CCf49aDBbdfF7A814C07D1FcBC2b719d674959",
+    "ProposalID": "proposal/0xf8c1b7d5502a89433fda48cf9ec4396f2ff0af1559e02c6ba16e0679033a5f01",
     "ProposalEvent": "proposal/created",
     "ProposalSpace": "victorbibiano.eth",
     "ProposalExpire": 0
@@ -62,10 +62,12 @@ ADD_OWNERSHIP_MOCK = {
 }
 
 
-def new_proposal():
-    val = hex(randrange(255))[2:]
-    CREATE_PROPOSAL_MOCK[
-        'ProposalID'] = "proposal/0xeca96e839070fff6f6c5140fcf4939779794feb6028edecc03d5f518133c" + str(val)
+def new_proposal(bad=0):
+    if bad != 0:
+        val = hex(randrange(255))[2:]
+        CREATE_PROPOSAL_MOCK[
+            'ProposalID'] = "proposal/0xf8c1b7d5502a89433fda48cf9ec4396f2ff0af1559e02c6ba16e0679033a5f" + str(val)
+
     print(f"Calling new proposal with data {CREATE_PROPOSAL_MOCK}")
     post_data = CREATE_PROPOSAL_MOCK
     response = requests.post(HTTP_SERVER_URL + "api/v1/createProposal", json.dumps(post_data), verify=VERIFY_PARAM)
@@ -148,7 +150,10 @@ def main():
     # Command to execute
     command = args[0]
     if command == "new_proposal":
-        new_proposal()
+        if len(args) > 1:
+            new_proposal(args[1])
+        else:
+            new_proposal(0)
     elif command == "get_voting_power":
         if len(args) > 1:
             get_voting_power(args[1])

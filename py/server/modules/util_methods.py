@@ -40,7 +40,8 @@ def hex_str_to_bytes(hex_str):
     return unhexlify(hex_str.encode('ascii'))
 
 
-def read_proposal_from_file():
+def read_proposals_from_file():
+    # TODO read multiple proposals
     file_name = PROPOSAL_JSON_DATA_PATH + PROPOSAL_JSON_DATA_FILE_NAME
 
     json_object = None
@@ -65,6 +66,8 @@ def write_proposal_to_file(prop):
     try:
         with open(file_name, 'w') as outfile:
             outfile.write(json_object)
+        logging.info(
+            "Proposal written to file: " + file_name + "\n" + json_object)
     except FileNotFoundError as e:
         logging.warning("Warning: " + str(e))
     except Exception as e:
