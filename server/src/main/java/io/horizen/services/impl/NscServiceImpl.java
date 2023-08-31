@@ -42,7 +42,7 @@ public class NscServiceImpl implements NscService {
         abiString = abiMethodString + "000000000000000000000000" + scAddress;
 
         String requestBody = buildNscRequestBody(abiString);
-        HttpURLConnection connection = Helper.sendRequestWithAuth(settings.getNscUrl() + settings.getNscUrlPostfix(), requestBody);
+        HttpURLConnection connection = Helper.sendRequest(settings.getNscUrl() + settings.getNscUrlPostfix(), requestBody, true);
 
         if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new Exception(connection.getResponseCode() + " " + connection.getResponseMessage());
@@ -66,7 +66,7 @@ public class NscServiceImpl implements NscService {
         String abiString = "0x" + Numeric.toHexStringNoPrefix(selector);
 
         String requestBody = buildNscRequestBody(abiString);
-        HttpURLConnection connection = Helper.sendRequestWithAuth(settings.getNscUrl() + settings.getNscUrlPostfix(), requestBody);
+        HttpURLConnection connection = Helper.sendRequest(settings.getNscUrl() + settings.getNscUrlPostfix(), requestBody, true);
 
         if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new Exception("Problem with getKeyOwnerScAddresses()");

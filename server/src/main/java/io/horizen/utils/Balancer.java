@@ -7,11 +7,8 @@ import com.google.inject.Inject;
 import io.horizen.config.Settings;
 import io.horizen.data_types.MainchainTip;
 import io.horizen.data_types.VotingProposal;
-import io.horizen.exception.GetMcAddressMapException;
-import io.horizen.exception.ScAddressFormatException;
-import io.horizen.exception.OwnershipAlreadySetException;
+import io.horizen.exception.*;
 import io.horizen.helpers.Mocks;
-import io.horizen.helpers.Helper;
 import io.horizen.helpers.MyGsonManager;
 import io.horizen.services.RosettaService;
 import io.horizen.services.SnapshotService;
@@ -67,11 +64,9 @@ public class Balancer {
             address = jsonObject.get("address").getAsString();
             owner = jsonObject.get("owner").getAsString();
         } catch (Exception ex) {
-            int code = 101;
-            String description = "Could not add ownership";
             String detail = "invalid json request data, could not find field: " + ex;
             log.error("Error in add ownership " + ex);
-            return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+            return new AddOwnershipException(detail).toString();
         }
 
         if (settings.getMockNsc()) {
@@ -79,40 +74,30 @@ public class Balancer {
                 snapshotService.addMockOwnershipEntry(address, owner);
             }
             catch (AddressFormatException ex) {
-                int code = 102;
-                String description = "Can not add ownership";
                 String detail = "address not valid: " + ex;
                 log.error("Error in add ownership " + ex);
-                return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+                return new AddOwnershipException(detail).toString();
             }
             catch (ScAddressFormatException ex) {
-                int code = 103;
-                String description = "Can not add ownership";
                 String detail = "Invalid owner string length != 42 or not an hex string";
                 log.error("Error in add ownership " + ex);
-                return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+                return new AddOwnershipException(detail).toString();
             }
             catch (OwnershipAlreadySetException ex) {
-                int code = 104;
-                String description = "Can not add ownership";
                 String detail = "Ownership already set";
                 log.error("Error in add ownership " + ex);
-                return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+                return new AddOwnershipException(detail).toString();
             }
             catch (Exception ex) {
-                int code = 105;
-                String description = "Can not add ownership";
                 String detail = "Problem with adding ownership";
                 log.error("Error in add ownership " + ex);
-                return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+                return new AddOwnershipException(detail).toString();
             }
         }
         else {
-            int code = 306;
-            String description = "Could not add ownership";
             String detail = "Method not supported with real native smart contract. Pls set mock_nsc=true in balancer";
             log.error("Error in add ownership - " + detail);
-            return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+            return new AddOwnershipException(detail).toString();
         }
 
         JsonObject jsonObject = new JsonObject();
@@ -152,11 +137,9 @@ public class Balancer {
             ret = snapshotService.getOwnerScAddrList();
         }
         catch (Exception ex) {
-            int code = 302;
-            String description = "Could not get owner sc addresses";
             String detail = "An exception occurred: " + ex;
             log.error("Error in getOwnerScAddresses " + ex);
-            return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+            return new GetOwnerScAddressesException(detail).toString();
         }
 
         log.info("getOwnerScAddresses response with data " + ret);
@@ -171,36 +154,23 @@ public class Balancer {
         log.info("getVotingPower request with data " + req.queryParams());
 
         if (address == null) {
-            int code = 107;
-            String description = "Cannot get voting power";
             String detail = "Addresses parameter missing";
             log.error("Error in getVotingPower - addresses parameter missing");
-            return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+            return new GenericException(detail).toString();
         }
         if (snapshotService.getActiveProposal() == null) {
-            int code = 305;
-            String description = "No proposal has been received at this point";
             String detail = "Proposal should be received before getting voting power";
             log.error("Error in getVotingPower - " + detail);
-            return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+            return new GenericException(detail).toString();
         }
         double balance;
         try {
             balance = rosettaService.getAddressBalance(address);
         }
-        catch (GetMcAddressMapException ex) {
-            int code = 202;
-            String description = "Could not get ownership for sc address:" + address;
-            String detail = "An exception occurred: " + ex;
-            log.error("Error in getVotingPower " + ex);
-            return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
-        }
         catch (Exception ex) {
-            int code = 108;
-            String description = "Can not get address balance";
             String detail = "An exception occurred: " + ex;
             log.error("Error in getVotingPower " + ex);
-            return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+            return new GenericException(detail).toString();
         }
 
         JsonObject jsonObject = new JsonObject();
@@ -236,11 +206,9 @@ public class Balancer {
             author = extractValueFromBody(body, "Author:");
             proposalId = jsonObject.get("ProposalID").getAsString();
         } catch (Exception ex) {
-            int code = 304;
-            String description = "Can not create proposal";
             String detail = "parameters format not expected or missing: " + ex;
             log.error("Error in createProposal " + ex);
-            return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+            return new CreateProposalException(detail).toString();
         }
 
         SimpleDateFormat format = new SimpleDateFormat("dd MMM yy HH:mm z");
@@ -248,31 +216,25 @@ public class Balancer {
             startDate = format.parse(start);
             endDate = format.parse(end);
         } catch (ParseException ex) {
-            int code = 304;
-            String description = "Can not create proposal";
             String detail =  "proposal data format not expected: " + ex;
             log.error("Error in createProposal " + ex);
-            return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+            return new CreateProposalException(detail).toString();
         }
         try {
             mainchainTip = rosettaService.getMainchainTip();
         } catch (Exception ex) {
-            int code = 303;
-            String description = "Can not create proposal";
             String detail = "Can not determine main chain best block: " + ex;
             log.error("Error in createProposal " + ex);
-            return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+            return new RosettaException(detail).toString();
         }
 
         VotingProposal proposal = new VotingProposal(proposalId, mainchainTip.getBlockHeight(), mainchainTip.getBlockHash(), startDate,endDate, author);
         try {
             snapshotService.storeProposalData(proposal);
         } catch (Exception ex) {
-            int code = 304;
-            String description = "Can not create proposal";
             String detail = "Problem with storing proposal data: " + ex;
             log.error("Error in createProposal " + ex);
-            return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+            return new SnapshotException(detail).toString();
         }
         JsonObject statusObject = new JsonObject();
         statusObject.addProperty("status", "OK");
@@ -320,20 +282,16 @@ public class Balancer {
             scAddress = jsonObject.get("scAddress").getAsString();
         }
         catch (Exception ex) {
-            int code = 301;
-            String description = "Could not get ownership - no scAddress found";
-            String detail = "An exception occurred: " + ex;
+            String detail = "Could not get ownership - no scAddress found";
             log.error("Error in getOwnerships - no scAddress found" + ex);
-            return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+            return new GetOwnershipException(detail).toString();
         }
         try {
             ret = snapshotService.getMcAddressMap(scAddress);
         } catch (Exception ex) {
-            int code = 301;
-            String description = "Could not get ownership for sc address:" + scAddress;
-            String detail = "An exception occurred: " + ex;
+            String detail = "Could not get ownership for sc address:" + scAddress;
             log.error("Error in getOwnerships " + ex);
-            return gson.toJson(Helper.buildErrorJsonObject(code, description, detail));
+            return new GetOwnershipException(detail).toString();
         }
 
         log.info("getOwnerships response with data " + ret);

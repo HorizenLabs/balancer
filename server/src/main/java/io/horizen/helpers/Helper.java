@@ -34,7 +34,7 @@ public class Helper {
             settings = mySettings;
     }
 
-    public static HttpURLConnection sendRequest(String url, String data) throws Exception {
+    public static HttpURLConnection sendRequest(String url, String data, Boolean authActivated) throws Exception {
         URL endpointUrl = new URL(url);
         HttpURLConnection connection = (HttpURLConnection) endpointUrl.openConnection();
 
@@ -42,39 +42,12 @@ public class Helper {
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-Type", "application/json");
 
-        DataOutputStream outputStream = new DataOutputStream(connection.getOutputStream());
-        outputStream.writeBytes(data);
-        outputStream.flush();
-        outputStream.close();
-
-        return connection;
-    }
-
-    public static JsonObject buildErrorJsonObject(int code, String description, String detail) {
-        JsonObject errorObject = new JsonObject();
-        errorObject.addProperty("code", code);
-        errorObject.addProperty("description", description);
-        errorObject.addProperty("detail", detail);
-
-        JsonObject jsonObject = new JsonObject();
-        jsonObject.add("error", errorObject);
-
-        return jsonObject;
-    }
-
-    public static HttpURLConnection sendRequestWithAuth(String url, String data) throws Exception {
-        URL endpointUrl = new URL(url);
-        HttpURLConnection connection = (HttpURLConnection) endpointUrl.openConnection();
-
-        connection.setRequestMethod("POST");
-        connection.setDoOutput(true);
-
-        String auth = settings.getUsername() + ":" + settings.getPassword();
-        String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
-        String authHeader = "Basic " + encodedAuth;
-
-        connection.setRequestProperty("Authorization", authHeader);
-        connection.setRequestProperty("Content-Type", "application/json");
+        if (authActivated) {
+            String auth = settings.getUsername() + ":" + settings.getPassword();
+            String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
+            String authHeader = "Basic " + encodedAuth;
+            connection.setRequestProperty("Authorization", authHeader);
+        }
 
         DataOutputStream outputStream = new DataOutputStream(connection.getOutputStream());
         outputStream.writeBytes(data);

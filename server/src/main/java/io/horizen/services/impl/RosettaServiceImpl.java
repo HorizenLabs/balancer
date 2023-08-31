@@ -46,17 +46,15 @@ public class RosettaServiceImpl implements RosettaService {
         String requestBody = "{\"network_identifier\": {\"blockchain\": \"Zen\", \"network\": \"" + settings.getNetwork() + "\"}}";
 
         try {
-            HttpURLConnection connection = Helper.sendRequest(url, requestBody);
+            HttpURLConnection connection = Helper.sendRequest(url, requestBody, false);
             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 String response = IOUtils.toString(connection.getInputStream());
-                JsonObject responseObject = JsonParser.parseString(response).getAsJsonObject();
+                JsonObject responseObject = JsonParser.parseString(response).getAsJsonObject().getAsJsonObject("current_block_identifier");
 
                 int chainHeight = responseObject
-                        .getAsJsonObject("current_block_identifier")
                         .get("index")
                         .getAsInt();
                 String bestBlockHash = responseObject
-                        .getAsJsonObject("current_block_identifier")
                         .get("hash")
                         .getAsString();
 
@@ -122,35 +120,33 @@ public class RosettaServiceImpl implements RosettaService {
         catch (Exception ex) {
             throw new GetMcAddressMapException();
         }
-        if (mcAddressMap.containsKey(scAddress)) {
-            List<String> mcAddresses = mcAddressMap.get(scAddress);
 
-            if (settings.getMockRosetta()) {
-                System.out.println("MOCK ROSETTA RESPONSE");
-                return 123456789.0;
-            }
+        List<String> mcAddresses = mcAddressMap.get(scAddress);
 
-            // Call Rosetta endpoint /account/balance In the query we use just the block height (omitting the hash) in the
-            // 'block_identifier', this is for handling also the case of a chain reorg which reverts the block whose hash
-            // was red when the proposal has been received
+        if (settings.getMockRosetta()) {
+            System.out.println("MOCK ROSETTA RESPONSE");
+            return 123456789.0;
+        }
 
-            for (String mcAddress : mcAddresses) {
-                String body = buildRosettaRequestBodyForNetworkStatus(mcAddress);
-                HttpURLConnection connection = Helper.sendRequest(settings.getRosettaUrl() + "account/balance", body);
+        // Call Rosetta endpoint /account/balance In the query we use just the block height (omitting the hash) in the
+        // 'block_identifier', this is for handling also the case of a chain reorg which reverts the block whose hash
+        // was red when the proposal has been received
+        for (String mcAddress : mcAddresses) {
+            String body = buildRosettaRequestBodyForNetworkStatus(mcAddress);
+            HttpURLConnection connection = Helper.sendRequest(settings.getRosettaUrl() + "account/balance", body, false);
 
-                if(connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    String response = IOUtils.toString(connection.getInputStream());
-                    JsonElement jsonElement = JsonParser.parseString(response);
+            if(connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                String response = IOUtils.toString(connection.getInputStream());
+                JsonElement jsonElement = JsonParser.parseString(response);
 
-                    int amount = jsonElement
-                            .getAsJsonObject()
-                            .getAsJsonArray("balances")
-                            .get(0)
-                            .getAsJsonObject()
-                            .get("value")
-                            .getAsInt();
-                    balance += amount;
-                }
+                int amount = jsonElement
+                        .getAsJsonObject()
+                        .getAsJsonArray("balances")
+                        .get(0)
+                        .getAsJsonObject()
+                        .get("value")
+                        .getAsInt();
+                balance += amount;
             }
         }
         return balance;

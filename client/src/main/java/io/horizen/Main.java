@@ -2,6 +2,8 @@ package io.horizen;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.*;
 import java.io.*;
@@ -14,11 +16,10 @@ import java.util.Map;
 import java.util.Random;
 
 public class Main {
+    private static final Logger log =  LoggerFactory.getLogger(Main.class);
     private static final String LOCAL_HTTP_SERVER_URL = "http://localhost:5000/"; // change if https not used
     private static final String REMOTE_HTTP_SERVER_URL = "http://zendao-tn-1.de.horizenlabs.io:5000/";
-
     private static final String HTTP_SERVER_URL = LOCAL_HTTP_SERVER_URL;
-    //private static final String HTTP_SERVER_URL = REMOTE_HTTP_SERVER_URL;
 
     private static final Map<String, Object> CREATE_PROPOSAL_MOCK = new HashMap<>();
     private static final Map<String, Object> GET_VOTING_POWER_MOCK = new HashMap<>();
@@ -41,6 +42,28 @@ public class Main {
         ADD_OWNERSHIP_MOCK.put("address", "ztWBHD2Eo6uRLN6xAYxj8mhmSPbUYrvMPwt");
     }
 
+
+    public static HttpURLConnection sendRequest(String urlName, byte[] dataToWrite, boolean isPost) throws IOException {
+        URL url = new URL(HTTP_SERVER_URL + urlName);
+        HttpURLConnection connection = HTTP_SERVER_URL.contains("https") ? (HttpsURLConnection) url.openConnection() : (HttpURLConnection) url.openConnection();
+
+        if (isPost) {
+            connection.setRequestMethod("POST");
+            connection.setRequestProperty("Content-Type", "application/json");
+        }
+        else
+            connection.setRequestMethod("GET");
+
+        if (dataToWrite != null) {
+            connection.setDoOutput(true);
+            try (OutputStream outputStream = connection.getOutputStream()) {
+                outputStream.write(dataToWrite);
+            }
+        }
+
+        return connection;
+    }
+
     // Helper method to convert a map to a query string
     private static String getQueryString(Map<String, Object> params) {
         StringBuilder result = new StringBuilder();
@@ -59,44 +82,15 @@ public class Main {
         Random random = new Random();
         int val = random.nextInt(255);
         CREATE_PROPOSAL_MOCK.put("ProposalID", "proposal/0xeca96e839070fff6f6c5140fcf4939779794feb6028edecc03d5f518133c" + val);
-        System.out.println("Calling new proposal with data: " + CREATE_PROPOSAL_MOCK);
+        log.info("Calling new proposal with data: " + CREATE_PROPOSAL_MOCK);
 
-        URL url = new URL(HTTP_SERVER_URL + "api/v1/createProposal");
-        HttpURLConnection connection = HTTP_SERVER_URL.contains("https") ? (HttpsURLConnection) url.openConnection() : (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setDoOutput(true);
-
-        try (OutputStream outputStream = connection.getOutputStream()) {
-            outputStream.write(gson.toJson(CREATE_PROPOSAL_MOCK).getBytes());
-        }
-
+        HttpURLConnection connection = sendRequest("api/v1/createProposal", gson.toJson(CREATE_PROPOSAL_MOCK).getBytes(), true);
         printResponse(connection);
     }
 
     private static void getVotingPower2() throws IOException {
-        System.out.println("Calling get voting power with data: " + GET_VOTING_POWER_MOCK);
-
-        URL url = new URL(HTTP_SERVER_URL + "api/v1/getVotingPower");
-        HttpURLConnection connection = HTTP_SERVER_URL.contains("https") ? (HttpsURLConnection) url.openConnection() : (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setDoOutput(true);
-
-        try (OutputStream outputStream = connection.getOutputStream()) {
-            outputStream.write(gson.toJson(GET_VOTING_POWER_MOCK).getBytes());
-        }
-
-        printResponse(connection);
-    }
-    private static void getVotingPower1() throws IOException {
-        System.out.println("Calling get voting power with data: " + GET_VOTING_POWER_MOCK);
-
-        URL url = new URL(HTTP_SERVER_URL + "api/v1/getVotingPower");
-        HttpURLConnection connection = HTTP_SERVER_URL.contains("https") ? (HttpsURLConnection) url.openConnection() : (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-        connection.setRequestProperty("Content-Type", "application/json");
-
+        log.info("Calling get voting power with data: " + GET_VOTING_POWER_MOCK);
+        HttpURLConnection connection = sendRequest("api/v1/getVotingPower", gson.toJson(GET_VOTING_POWER_MOCK).getBytes(), true);
         printResponse(connection);
     }
 
@@ -112,16 +106,13 @@ public class Main {
             cmd = GET_VOTING_POWER_MOCK;
         }
 
-        System.out.println("Calling get voting power with data: " + cmd);
+        log.info("Calling get voting power with data: " + cmd);
 
         String queryString = getQueryString(cmd);
-        String baseUrl = HTTP_SERVER_URL + "api/v1/getVotingPower";
+        String baseUrl = "api/v1/getVotingPower";
         String fullUrl = baseUrl + "?" + queryString;
 
-        URL url = new URL(fullUrl);
-        HttpURLConnection connection = HTTP_SERVER_URL.contains("https") ? (HttpsURLConnection) url.openConnection() : (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-
+        HttpURLConnection connection = sendRequest(fullUrl, null,false);
         printResponse(connection);
     }
 
@@ -135,63 +126,32 @@ public class Main {
             data.put("address", address);
         }
 
-        System.out.println("Calling add ownership with data: " + data);
+        log.info("Calling add ownership with data: " + data);
 
-        URL url = new URL(HTTP_SERVER_URL + "api/v1/addOwnership");
-        HttpURLConnection connection = HTTP_SERVER_URL.contains("https") ? (HttpsURLConnection) url.openConnection() : (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setDoOutput(true);
-
-        try (OutputStream outputStream = connection.getOutputStream()) {
-            outputStream.write(gson.toJson(data).getBytes());
-        }
-
+        HttpURLConnection connection = sendRequest("api/v1/addOwnership", gson.toJson(data).getBytes(),true);
         printResponse(connection);
     }
 
     private static void getProposals() throws IOException {
-        System.out.println("Calling get proposals");
+        log.info("Calling get proposals");
 
-        URL url = new URL(HTTP_SERVER_URL + "api/v1/getProposals");
-        HttpURLConnection connection = HTTP_SERVER_URL.contains("https") ? (HttpsURLConnection) url.openConnection() : (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setDoOutput(true);
-
-        try (OutputStream outputStream = connection.getOutputStream()) {
-            outputStream.write("{}".getBytes());
-        }
-
+        HttpURLConnection connection = sendRequest("api/v1/getProposals", "{}".getBytes(),true);
         printResponse(connection);
     }
 
     private static void getOwnerships(String scAddress) throws IOException {
-        System.out.println("Calling get ownerships");
+        log.info("Calling get ownerships");
 
         Map<String, Object> requestData = new HashMap<>();
         requestData.put("scAddress", scAddress);
 
-        URL url = new URL(HTTP_SERVER_URL + "api/v1/getOwnerships");
-        HttpURLConnection connection = HTTP_SERVER_URL.contains("https") ? (HttpsURLConnection) url.openConnection() : (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-        connection.setRequestProperty("Content-Type", "application/json");
-        connection.setDoOutput(true);
-
-        try (OutputStream outputStream = connection.getOutputStream()) {
-            outputStream.write(gson.toJson(requestData).getBytes());
-        }
-
+        HttpURLConnection connection = sendRequest("api/v1/getOwnerships", gson.toJson(requestData).getBytes(),true);
         printResponse(connection);
     }
 
     private static void getOwnerScAddresses() throws IOException {
-        System.out.println("Calling get owner sc addresses");
-
-        URL url = new URL(HTTP_SERVER_URL + "api/v1/getOwnerScAddresses");
-        HttpURLConnection connection = HTTP_SERVER_URL.contains("https") ? (HttpsURLConnection) url.openConnection() : (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("POST");
-
+        log.info("Calling get owner sc addresses");
+        HttpURLConnection connection = sendRequest("api/v1/getOwnerScAddresses", null,true);
         printResponse(connection);
     }
 
@@ -206,58 +166,64 @@ public class Main {
                 }
 
                 String responseJsonPretty = gson.toJson(gson.fromJson(response.toString(), Object.class));
-                System.out.println(responseJsonPretty);
+                log.info(responseJsonPretty);
             }
         } else {
-            System.out.println("HTTP request failed with response code: " + responseCode);
+            log.error("HTTP request failed with response code: " + responseCode);
         }
     }
 
-    public static void main(String[] args) throws Exception {
-        if (HTTP_SERVER_URL.contains("https"))
-            setupSSL();
+    public static void main(String[] args) {
+        try {
+            if (HTTP_SERVER_URL.contains("https"))
+                setupSSL();
 
-        if (args.length == 0) {
-            System.out.println("Command not specified!");
-            return;
+            if (args.length == 0) {
+                log.error("Command not specified!");
+                return;
+            }
+
+            String command = args[0];
+            switch (command) {
+                case "new_proposal":
+                    newProposal();
+                    break;
+                case "get_voting_power":
+                    if (args.length > 1) {
+                        getVotingPower(args[1]);
+                    } else {
+                        getVotingPower(null);
+                    }
+                    break;
+                case "get_proposals":
+                    getProposals();
+                    break;
+                case "get_ownerships":
+                    if (args.length > 1) {
+                        getOwnerships(args[1]);
+                    } else {
+                        getOwnerships(null);
+                    }
+                    break;
+                case "get_owner_sc_addresses":
+                    getOwnerScAddresses();
+                    break;
+                case "add_ownership":
+                    if (args.length > 2) {
+                        addOwnership(args[1], args[2]);
+                    } else {
+                        addOwnership(null, null);
+                    }
+                    break;
+                default:
+                    log.error("Unsupported command!");
+                    break;
+            }
+        } catch (Exception ex) {
+            log.error(ex.toString());
+            throw new RuntimeException(ex);
         }
 
-        String command = args[0];
-        switch (command) {
-            case "new_proposal":
-                newProposal();
-                break;
-            case "get_voting_power":
-                if (args.length > 1) {
-                    getVotingPower(args[1]);
-                } else {
-                    getVotingPower(null);
-                }
-                break;
-            case "get_proposals":
-                getProposals();
-                break;
-            case "get_ownerships":
-                if (args.length > 1) {
-                    getOwnerships(args[1]);
-                } else {
-                    getOwnerships(null);
-                }
-                break;
-            case "get_owner_sc_addresses":
-                getOwnerScAddresses();
-                break;
-            case "add_ownership":
-                if (args.length > 2) {
-                    addOwnership(args[1], args[2]);
-                } else {
-                    addOwnership(null, null);
-                }
-                break;
-            default:
-                System.out.println("Unsupported command!");
-                break;
-        }
     }
 
     private static void setupSSL() throws Exception {
