@@ -31,6 +31,9 @@ ROSETTA_URL = str(os.getenv("ROSETTA_URL", "http://localhost:8080/"))
 # The network type which rosetta is running on. Can be 'test' or 'main'
 ROSETTA_NETWORK_TYPE = str(os.getenv("ROSETTA_NETWORK_TYPE", "test"))
 
+# Snapshot API server (if not mocked)
+SNAPSHOT_URL = str(os.getenv("SNAPSHOT_URL", "https://hub.snapshot.org/graphql"))
+
 # The json file where the active proposal is stored
 __PROPOSAL_JSON_DATA_PATH_DEFAULT = str(get_project_root()) + "/"
 __PROPOSAL_JSON_DATA_FILE_NAME_DEFAULT = 'active_proposal.json'
@@ -40,11 +43,16 @@ PROPOSAL_JSON_DATA_FILE_NAME = str(os.getenv("PROPOSAL_JSON_DATA_FILE_NAME", __P
 # set true if we can not have rosetta for getting balance
 MOCK_ROSETTA = os.getenv("MOCK_ROSETTA", 'False').lower() in ('true', '1', 'y', 'yes')
 
+# set true if we do not have snapshot.org for getting proposal details
+MOCK_SNAPSHOT = os.getenv("MOCK_SNAPSHOT", 'False').lower() in ('true', '1', 'y', 'yes')
+
 # set true if we can not interact with a real Native Smart Contract
 MOCK_NSC = os.getenv("MOCK_NSC", 'False').lower() in ('true', '1', 'y', 'yes')
 
 # ----------------------------------------------------------------------------------------
-# these constants are used in case we are mocking rosetta and/or native smart contract
+# these constants are used in case we are mocking some module
+MOCK_SNAPSHOT_VALUE = 123456
+
 MOCK_ROSETTA_GET_BALANCE_RESP = {
     "score": [
         {
@@ -56,6 +64,11 @@ MOCK_ROSETTA_GET_BALANCE_RESP = {
 
 MOCK_ROSETTA_BLOCK_HASH = "000439739cac7736282169bb10d368123ca553c45ea6d4509d809537cd31aa0d"
 MOCK_ROSETTA_BLOCK_HEIGHT = 100
+MOCK_ROSETTA_NETWORK_STATUS_RETURN = {
+    "current_block_identifier": {
+        "index": MOCK_ROSETTA_BLOCK_HEIGHT,
+        "hash": MOCK_ROSETTA_BLOCK_HASH    }
+}
 
 MOCK_MC_ADDRESS_MAP = {
     "0x72661045bA9483EDD3feDe4A73688605b51d40c0": [
@@ -101,3 +114,9 @@ ROSETTA_REQUEST_BLOCK_TEMPLATE = {
         "index": 0
     }
 }
+
+# these definitions are used for calling snapshot API and should not be modified
+# unless different queries are needed
+# See: https://docs.snapshot.org/tools/api
+# ------------------------------------------------------------------------------------
+SNAPSHOT_REQUEST_QUERY_STRING = "query Proposal {proposal(id: SNAPSHOT_PROPOSAL_ID) {snapshot}}"

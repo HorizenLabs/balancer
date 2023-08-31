@@ -4,13 +4,16 @@ import re
 from threading import Lock
 
 import base58
+import requests
 from eth_utils import add_0x_prefix
 
-from .balancerError import AddOwnershipError
-from .definitions import MOCK_MC_ADDRESS_MAP, MOCK_NSC
+from .balancerError import AddOwnershipError, SnapshotError
+from .definitions import MOCK_MC_ADDRESS_MAP, MOCK_NSC, MOCK_SNAPSHOT, MOCK_SNAPSHOT_VALUE, \
+    SNAPSHOT_URL, SNAPSHOT_REQUEST_QUERY_STRING
 from .nsc_methods import get_nsc_ownerships, get_nsc_owner_sc_addresses
 from .proposal import VotingProposal
-from .util_methods import write_proposal_to_file, print_log, warn_if_proposal_not_active, check_sc_address
+from .util_methods import write_proposal_to_file, print_log, warn_if_proposal_not_active, check_sc_address, \
+    print_outgoing, print_incoming
 from dateutil import parser
 
 active_proposal = VotingProposal(in_id=None)
@@ -48,11 +51,12 @@ def extract_body_attributes(body_string):
     return from_time, to_time, auth_string
 
 
-def store_proposal_data(proposal_json, chain_tip_height, chain_tip_hash):
+def store_proposal_data(proposal_json, chain_tip_height, chain_tip_hash, snapshot_value):
     global active_proposal
 
     with mutex:
-        prop_id = proposal_json['ProposalID']
+        # "proposal/0xeca96e839070fff6f6c5140fcf4939779794feb6028edecc03d5f518133c52"
+        prop_id = re.split('/', proposal_json['ProposalID'])[1]
         if prop_id in proposal_dict.keys():
             return
 
@@ -64,14 +68,17 @@ def store_proposal_data(proposal_json, chain_tip_height, chain_tip_hash):
             bl_hash=chain_tip_hash,
             from_time=from_time,
             to_time=to_time,
-            author=author)
+            author=author,
+            snapshot=snapshot_value
+        )
 
         proposal_dict[prop_id] = prop
         active_proposal = prop
         write_proposal_to_file(active_proposal)
 
 
-def init_active_proposal(deserialized_proposal_dict):
+def init_active_proposals(deserialized_proposal_dict):
+    # TODO initialize the full dict of proposals
     global active_proposal
     with mutex:
         proposal = deserialized_proposal_dict['Proposal']
@@ -82,6 +89,7 @@ def init_active_proposal(deserialized_proposal_dict):
         author = proposal['Author']
         chain_tip_height = proposal['block_height']
         chain_tip_hash = proposal['block_hash']
+        snapshot_value = proposal['snapshot']
 
         prop = VotingProposal(
             in_id=prop_id,
@@ -89,13 +97,56 @@ def init_active_proposal(deserialized_proposal_dict):
             bl_hash=chain_tip_hash,
             from_time=parser.parse(from_time),
             to_time=parser.parse(to_time),
-            author=author)
+            author=author,
+            snapshot=snapshot_value
+        )
 
         proposal_dict[prop_id] = prop
 
         logging.info("Setting active voting proposal:\n" + json.dumps(prop.to_json(), indent=4))
         active_proposal = prop
         warn_if_proposal_not_active(prop)
+
+
+'''
+import os
+result = os.popen("curl -H 'Content-Type: application/json' -X POST -d '{\"query\": \"query Proposal {proposal(id: \\\"0xf8c1b7d5502a89433fda48cf9ec4396f2ff0af1559e02c6ba16e0679033a5f01\\\") {snapshot}}\"}' https://hub.snapshot.org/graphql").read()
+(see: https://docs.snapshot.org/tools/api)
+'''
+def get_proposal_snapshot(proposal):
+    if MOCK_SNAPSHOT:
+        return MOCK_SNAPSHOT_VALUE
+
+    proposal_id = re.split('/', proposal['ProposalID'])[1]
+
+    # Call shanpshot API
+    request_body = {
+        "query": SNAPSHOT_REQUEST_QUERY_STRING.replace('SNAPSHOT_PROPOSAL_ID', "\"" + proposal_id + "\"")
+    }
+
+    print_outgoing("Snapshot", "/graphql", request_body)
+
+    try:
+        return_snapshot = requests.post(SNAPSHOT_URL, request_body)
+
+        print_incoming("Snapshot", "/graphql", return_snapshot.json())
+
+        if 'data' not in return_snapshot.json():
+            # the request was malformed
+            response = SnapshotError(
+                "An exception occurred trying to get proposal details from snapshot: " + str(
+                    return_snapshot.json())).get()
+        elif return_snapshot.json()['data']['proposal'] is None:
+            # the proposal id was not known by snapshot
+            response = SnapshotError(
+                "An exception occurred trying to get proposal details from snapshot: " + str(
+                    return_snapshot.json())).get()
+        else:
+            response = return_snapshot.json()
+    except Exception as e:
+        response = SnapshotError("An exception occurred trying to get proposal details from snapshot: " + str(e)).get()
+
+    return response
 
 
 # used only when mocking nsc
@@ -151,7 +202,8 @@ def get_owner_sc_addr_list():
         return get_nsc_owner_sc_addresses()
 
 
-def get_active_proposal():
+def get_active_proposal(snapshot=None):
+    # TODO get the proposal from the dict having the input snapshot
     return active_proposal
 
 

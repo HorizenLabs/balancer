@@ -40,7 +40,8 @@ def hex_str_to_bytes(hex_str):
     return unhexlify(hex_str.encode('ascii'))
 
 
-def read_proposal_from_file():
+def read_proposals_from_file():
+    # TODO read multiple proposals
     file_name = PROPOSAL_JSON_DATA_PATH + PROPOSAL_JSON_DATA_FILE_NAME
 
     json_object = None
