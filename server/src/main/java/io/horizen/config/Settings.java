@@ -25,7 +25,7 @@ public class Settings {
     private final int balancerPort;
 
     public Settings() {
-        this.mockNsc = false; //getBooleanEnv("MOCK_NSC");
+        this.mockNsc = getBooleanEnv("MOCK_NSC");
         this.mockRosetta = getBooleanEnv("MOCK_ROSETTA");
         this.mockSnapshot = getBooleanEnv("MOCK_SNAPSHOT");
         this.listeningOnHTTP = getBooleanEnv("LISTENING_ON_HTTP");
