@@ -1,17 +1,22 @@
 package io.horizen.services.impl;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.inject.Inject;
 import io.horizen.config.Settings;
 import io.horizen.data_types.VotingProposal;
-import io.horizen.exception.ScAddressFormatException;
 import io.horizen.exception.OwnershipAlreadySetException;
-import io.horizen.helpers.Mocks;
+import io.horizen.exception.ScAddressFormatException;
+import io.horizen.exception.SnapshotException;
 import io.horizen.helpers.Helper;
+import io.horizen.helpers.Mocks;
 import io.horizen.services.NscService;
 import io.horizen.services.SnapshotService;
 import org.bitcoinj.core.AddressFormatException;
 import org.bitcoinj.core.Base58;
+import spark.utils.IOUtils;
 
+import java.net.HttpURLConnection;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -43,7 +48,35 @@ public class SnapshotServiceImpl implements SnapshotService {
         return proposals.values();
     }
 
-    public VotingProposal getActiveProposal() {
+    @Override
+    public int getSnapshotProposal(String proposalID) throws Exception {
+        if (settings.getMockSnapshot())
+            return Mocks.MOCK_SNAPSHOT_VALUE;
+
+        String graphqlQuery = settings.getSnapshotRequestQueryString().replace("SNAPSHOT_PROPOSAL_ID", proposalID);
+
+        try {
+            HttpURLConnection connection = Helper.sendRequest(settings.getSnapshotUrl(), graphqlQuery, false);
+            if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                String response = IOUtils.toString(connection.getInputStream());
+                JsonObject responseObject = JsonParser.parseString(response).getAsJsonObject();
+
+                if (!responseObject.has("data"))
+                    throw new SnapshotException("An exception occurred trying to get proposal details from snapshot: " + responseObject);
+                else if (!responseObject.get("data").getAsJsonObject().has("proposal") || !responseObject.get("data").getAsJsonObject().get("proposal").getAsJsonObject().has("snapshot"))
+                    throw new SnapshotException("An exception occurred trying to get proposal details from snapshot: " + responseObject);
+                else
+                    return responseObject.get("data").getAsJsonObject().get("proposal").getAsJsonObject().get("snapshot").getAsInt();
+            }
+            else
+                throw new SnapshotException("An exception occurred trying to get proposal details from snapshot: "+ connection.getResponseCode() + " " + connection.getResponseMessage());
+        } catch (Exception ex) {
+            throw new SnapshotException(ex.toString());
+        }
+    }
+
+    public VotingProposal getActiveProposal(int snapshot) {
+        //todo get the proposal from the dict having the input snapshot
         return activeProposal;
     }
 
@@ -81,10 +114,11 @@ public class SnapshotServiceImpl implements SnapshotService {
         }
     }
 
-    public void initActiveProposal() {
+    public void initActiveProposals() {
+        // todo initialize the full dict of proposals
         VotingProposal votingProposal;
         try {
-            votingProposal = Helper.readProposalFromFile();
+            votingProposal = Helper.readProposalsFromFile();
         } catch (Exception ex) {
             votingProposal = null;
         }

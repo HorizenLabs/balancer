@@ -41,6 +41,7 @@ public class Helper {
         connection.setRequestMethod("POST");
         connection.setDoOutput(true);
         connection.setRequestProperty("Content-Type", "application/json");
+        connection.setRequestProperty("Accept", "application/json");
 
         if (authActivated) {
             String auth = settings.getUsername() + ":" + settings.getPassword();
@@ -72,7 +73,8 @@ public class Helper {
         log.info("Proposal written to file: " + filePath + "\n" + jsonProposal);
     }
 
-    public static VotingProposal readProposalFromFile() {
+    public static VotingProposal readProposalsFromFile() {
+        // todo read multiple proposals
         String filePath = settings.getProposalJsonDataPath() + settings.getProposalJsonDataFileName();
 
         // Check if the file exists before reading
@@ -98,6 +100,7 @@ public class Helper {
         String id = proposalObject.get("ID").getAsString();
         int blockHeight = proposalObject.get("block_height").getAsInt();
         String blockHash = proposalObject.get("block_hash").getAsString();
+        int snapshot = proposalObject.get("snapshot").getAsInt();
 
         Date fromTime;
         Date toTime;
@@ -108,13 +111,13 @@ public class Helper {
             fromTime = sdf.parse(fromTimeString);
             toTime = sdf.parse(toTimeString);
 
-        } catch (ParseException e) {
+        } catch (ParseException ex) {
             return null;
         }
 
         String author = proposalObject.get("Author").getAsString();
 
-        return new VotingProposal(id, blockHeight, blockHash, fromTime, toTime, author);
+        return new VotingProposal(id, blockHeight, blockHash, fromTime, toTime, author, snapshot);
     }
 
     public static void warnIfProposalNotActive(VotingProposal votingProposal) {

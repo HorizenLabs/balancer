@@ -12,6 +12,7 @@ public final class Mocks {
 
     public static final String MOCK_ROSETTA_BLOCK_HASH = "000439739cac7736282169bb10d368123ca553c45ea6d4509d809537cd31aa0d";
     public static final int MOCK_ROSETTA_BLOCK_HEIGHT = 100;
+    public static final int MOCK_SNAPSHOT_VALUE = 123456;
 
     static {
         mockMcAddressMap.put("0x72661045bA9483EDD3feDe4A73688605b51d40c0",

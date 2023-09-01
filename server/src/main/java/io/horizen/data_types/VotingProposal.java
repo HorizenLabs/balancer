@@ -13,9 +13,9 @@ public class VotingProposal {
     @SerializedName("ID")
     private final String id;
     @SerializedName("block_height")
-    private final int blockHeight;
+    private final int mcBlockHeight;
     @SerializedName("block_hash")
-    private final String blockHash;
+    private final String mcBlockHash;
     @SerializedName("from")
     private final Date fromTime;
     @SerializedName("to")
@@ -23,25 +23,29 @@ public class VotingProposal {
     @SerializedName("Author")
     private final String author;
 
-    public VotingProposal(String id, int blockHeight, String blockHash, Date fromTime, Date toTime, String author) {
+    @SerializedName("Snapshot")
+    private final int snapshot;
+
+    public VotingProposal(String id, int mcBlockHeight, String mcBlockHash, Date fromTime, Date toTime, String author, int snapshot) {
         this.id = id;
-        this.blockHeight = blockHeight;
-        this.blockHash = blockHash;
+        this.mcBlockHeight = mcBlockHeight;
+        this.mcBlockHash = mcBlockHash;
         this.fromTime = fromTime;
         this.toTime = toTime;
         this.author = author;
+        this.snapshot = snapshot;
     }
 
     public String getId() {
         return id;
     }
 
-    public int getBlockHeight() {
-        return blockHeight;
+    public int getMcBlockHeight() {
+        return mcBlockHeight;
     }
 
-    public String getBlockHash() {
-        return blockHash;
+    public String getMcBlockHash() {
+        return mcBlockHash;
     }
 
     public Date getFromTime() {
@@ -64,11 +68,12 @@ public class VotingProposal {
 
         JsonObject proposalObject = new JsonObject();
         proposalObject.add("ID", new JsonPrimitive(id));
-        proposalObject.add("block_height", new JsonPrimitive(blockHeight));
-        proposalObject.add("block_hash", new JsonPrimitive(blockHash));
+        proposalObject.add("block_height", new JsonPrimitive(mcBlockHeight));
+        proposalObject.add("block_hash", new JsonPrimitive(mcBlockHash));
         proposalObject.add("from", new JsonPrimitive(sdf.format(fromTime)));
         proposalObject.add("to", new JsonPrimitive(sdf.format(toTime)));
         proposalObject.add("Author", new JsonPrimitive(author));
+        proposalObject.add("snapshot", new JsonPrimitive(snapshot));
 
         json.add("Proposal", proposalObject);
         return MyGsonManager.getGson().toJson(json);
@@ -82,11 +87,12 @@ public class VotingProposal {
     public String toString() {
         return "VotingProposal{" +
                 "id='" + id + '\'' +
-                ", blockHeight=" + blockHeight +
-                ", blockHash='" + blockHash + '\'' +
+                ", blockHeight=" + mcBlockHeight +
+                ", blockHash='" + mcBlockHash + '\'' +
                 ", fromTime=" + fromTime +
                 ", toTime=" + toTime +
                 ", author='" + author + '\'' +
+                ", snapshot=" + snapshot +
                 '}';
     }
 }

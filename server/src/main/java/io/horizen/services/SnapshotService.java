@@ -10,7 +10,7 @@ public interface SnapshotService {
 
     void storeProposalData(VotingProposal votingProposal) throws Exception;
 
-    VotingProposal getActiveProposal();
+    VotingProposal getActiveProposal(int snapshot);
 
     List<String> getOwnerScAddrList() throws Exception;
 
@@ -18,7 +18,9 @@ public interface SnapshotService {
 
     Map<String, List<String>> getMcAddressMap(String scAddress) throws Exception;
 
-    void initActiveProposal();
+    void initActiveProposals();
 
     Collection<VotingProposal> getProposals();
+
+    int getSnapshotProposal(String proposalID) throws Exception;
 }

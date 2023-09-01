@@ -1,12 +1,12 @@
 package io.horizen.services.impl;
 
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.inject.Inject;
 import io.horizen.config.Settings;
 import io.horizen.data_types.MainchainTip;
 import io.horizen.exception.GetMcAddressMapException;
+import io.horizen.exception.RosettaException;
 import io.horizen.helpers.Helper;
 import io.horizen.helpers.Mocks;
 import io.horizen.helpers.MyGsonManager;
@@ -51,6 +51,9 @@ public class RosettaServiceImpl implements RosettaService {
                 String response = IOUtils.toString(connection.getInputStream());
                 JsonObject responseObject = JsonParser.parseString(response).getAsJsonObject().getAsJsonObject("current_block_identifier");
 
+                if (responseObject.has("message"))
+                    throw new RosettaException("An exception occurred trying to get mainchain tip from rosetta: " + responseObject.get("message").getAsString());
+
                 int chainHeight = responseObject
                         .get("index")
                         .getAsInt();
@@ -61,13 +64,14 @@ public class RosettaServiceImpl implements RosettaService {
                 return new MainchainTip(chainHeight, bestBlockHash);
             }
             else
-                throw new Exception(connection.getResponseCode() + " " + connection.getResponseMessage());
+                throw new RosettaException("An exception occurred trying to get mainchain tip from rosetta: " + connection.getResponseCode() + " " + connection.getResponseMessage());
         } catch (Exception ex) {
             log.error("Error in getMainchainTip " + ex);
             throw ex;
         }
     }
 
+    // not used
     public String getMainchainBlockHash(int height) throws Exception{
         if (settings.getMockRosetta()) {
             return Mocks.MOCK_ROSETTA_BLOCK_HASH;
@@ -108,10 +112,10 @@ public class RosettaServiceImpl implements RosettaService {
         return MyGsonManager.getGson().toJson(requestBody);
     }
 
-    public Double getAddressBalance(String scAddress) throws Exception {
+    public Double getAddressBalance(String scAddress, int snapshot) throws Exception {
         double balance = 0;
 
-        Helper.warnIfProposalNotActive(snapshotService.getActiveProposal());
+        Helper.warnIfProposalNotActive(snapshotService.getActiveProposal(snapshot));
 
         Map<String, List<String>> mcAddressMap;
         try {
@@ -137,16 +141,29 @@ public class RosettaServiceImpl implements RosettaService {
 
             if(connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 String response = IOUtils.toString(connection.getInputStream());
-                JsonElement jsonElement = JsonParser.parseString(response);
+                JsonObject jsonObject = JsonParser.parseString(response).getAsJsonObject();
 
-                int amount = jsonElement
-                        .getAsJsonObject()
-                        .getAsJsonArray("balances")
-                        .get(0)
-                        .getAsJsonObject()
-                        .get("value")
-                        .getAsInt();
-                balance += amount;
+                try {
+                    int amount = jsonObject
+                            .getAsJsonArray("balances")
+                            .get(0)
+                            .getAsJsonObject()
+                            .get("value")
+                            .getAsInt();
+                    balance += amount;
+                } catch (Exception ex) {
+                    // this may happen if rosetta is reindexing
+                    String errorMessage = jsonObject.get("message").getAsString();
+                    String details;
+                    if (jsonObject.has("details"))
+                        details = jsonObject.get("details").getAsString();
+                    else
+                        details = "N.A.";
+
+                    throw new RosettaException("Error occurred trying to get balance from rosetta. " +
+                            "message: " + errorMessage + ", details: " + details);
+                }
+
             }
         }
         return balance;
@@ -167,7 +184,7 @@ public class RosettaServiceImpl implements RosettaService {
         requestBody.add("account_identifier", accountIdentifier);
 
         JsonObject blockIdentifier = new JsonObject();
-        blockIdentifier.addProperty("index", snapshotService.getActiveProposal().getBlockHeight());
+        blockIdentifier.addProperty("index", snapshotService.getActiveProposal(0).getMcBlockHeight());
         requestBody.add("block_identifier", blockIdentifier);
 
         return MyGsonManager.getGson().toJson(requestBody);

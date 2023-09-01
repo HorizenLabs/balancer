@@ -41,7 +41,7 @@ public class Main {
         balancer.setupRoutes();
 
         SnapshotService snapshotService = injector.getInstance(SnapshotService.class);
-        snapshotService.initActiveProposal();
+        snapshotService.initActiveProposals();
 
         // Stop the server gracefully when the application shuts down
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

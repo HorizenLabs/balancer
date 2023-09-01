@@ -148,35 +148,40 @@ public class Balancer {
     }
 
     private String getVotingPower(Request req, Response res) {
-        String address = req.queryParams("addresses");
+        String sc_address = req.queryParams("addresses");
+        int snapshot = 0;
+
+        if (req.queryParams().contains("snapshot"))
+            snapshot = Integer.parseInt(req.queryParams("snapshot"));
+
         Gson gson = MyGsonManager.getGson();
         res.type("application/json");
         log.info("getVotingPower request with data " + req.queryParams());
 
-        if (address == null) {
-            String detail = "Addresses parameter missing";
-            log.error("Error in getVotingPower - addresses parameter missing");
+        if (sc_address == null || snapshot == 0) {
+            String detail = "Addresses or snapshot parameter missing";
+            log.error("Error in getVotingPower - addresses or snapshot parameter missing");
             return new GenericException(detail).toString();
         }
-        if (snapshotService.getActiveProposal() == null) {
+        if (snapshotService.getActiveProposal(snapshot) == null) {
             String detail = "Proposal should be received before getting voting power";
             log.error("Error in getVotingPower - " + detail);
             return new GenericException(detail).toString();
         }
         double balance;
         try {
-            balance = rosettaService.getAddressBalance(address);
+            balance = rosettaService.getAddressBalance(sc_address,snapshot);
         }
         catch (Exception ex) {
             String detail = "An exception occurred: " + ex;
             log.error("Error in getVotingPower " + ex);
-            return new GenericException(detail).toString();
+            return new RosettaException(detail).toString();
         }
 
         JsonObject jsonObject = new JsonObject();
         JsonArray scoreArray = new JsonArray();
         JsonObject scoreObject = new JsonObject();
-        scoreObject.addProperty("address", address);
+        scoreObject.addProperty("address", sc_address);
         scoreObject.addProperty("score", String.format("%.0f", balance)); // fix for outputting 123456789.0 as 1.23456789E8
         scoreArray.add(scoreObject);
         jsonObject.add("score", scoreArray);
@@ -204,7 +209,9 @@ public class Balancer {
             start = extractValueFromBody(body, "Starts on:");
             end = extractValueFromBody(body, "Ends on:");
             author = extractValueFromBody(body, "Author:");
-            proposalId = jsonObject.get("ProposalID").getAsString();
+            String proposalWithPrefix = jsonObject.get("ProposalID").getAsString();
+            int startIndex = proposalWithPrefix.indexOf("proposal/") + "proposal/".length();
+            proposalId = proposalWithPrefix.substring(startIndex);
         } catch (Exception ex) {
             String detail = "parameters format not expected or missing: " + ex;
             log.error("Error in createProposal " + ex);
@@ -228,7 +235,14 @@ public class Balancer {
             return new RosettaException(detail).toString();
         }
 
-        VotingProposal proposal = new VotingProposal(proposalId, mainchainTip.getBlockHeight(), mainchainTip.getBlockHash(), startDate,endDate, author);
+        int snapshot;
+        try {
+            snapshot = snapshotService.getSnapshotProposal(proposalId);
+        } catch (Exception ex) {
+            return new SnapshotException(ex.toString()).toString();
+        }
+
+        VotingProposal proposal = new VotingProposal(proposalId, mainchainTip.getBlockHeight(), mainchainTip.getBlockHash(), startDate,endDate, author, snapshot);
         try {
             snapshotService.storeProposalData(proposal);
         } catch (Exception ex) {
