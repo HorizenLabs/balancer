@@ -51,7 +51,7 @@ public class Main {
     }
 
     private static void setupSSL(boolean isServer) {
-        String keystoreFilePath = isServer ? "/home/ddrvar/keystore/keystore.jks" : "keystore/keystore.p12";
+        String keystoreFilePath = isServer ? "../../keystore/keystore.jks" : "keystore/keystore.p12";
         String keystorePassword = isServer ? "changeit" : "mypassword";
 
         try {
