@@ -125,10 +125,12 @@ public class RosettaServiceImpl implements RosettaService {
             throw new GetMcAddressMapException();
         }
 
-        List<String> mcAddresses = mcAddressMap.get(scAddress);
+        if (!mcAddressMap.containsKey(scAddress))
+            return balance;
 
+        List<String> mcAddresses = mcAddressMap.get(scAddress);
         if (settings.getMockRosetta()) {
-            System.out.println("MOCK ROSETTA RESPONSE");
+            log.info("MOCK ROSETTA RESPONSE");
             return 123456789.0;
         }
 

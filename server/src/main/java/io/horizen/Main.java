@@ -46,7 +46,7 @@ public class Main {
         // Stop the server gracefully when the application shuts down
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             stop();
-            System.out.println("Server stopped");
+            log.info("Server stopped");
         }));
     }
 
@@ -72,14 +72,14 @@ public class Main {
 
     private static void checkMocks(Settings settings) {
         if (settings.getMockRosetta()) {
-            System.out.println("##################################");
-            System.out.println("##    MOCKING ROSETTA MODULE    ##");
-            System.out.println("##################################");
+            log.info("##################################");
+            log.info("##    MOCKING ROSETTA MODULE    ##");
+            log.info("##################################");
         }
         if (settings.getMockNsc()) {
-            System.out.println("##################################");
-            System.out.println("##    MOCKING NSC MODULE    ##");
-            System.out.println("##################################");
+            log.info("##################################");
+            log.info("##    MOCKING NSC MODULE    ##");
+            log.info("##################################");
         }
     }
 }
