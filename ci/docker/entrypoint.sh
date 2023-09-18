@@ -76,10 +76,11 @@ find ${WORK_DIR} -writable -print0 | xargs -0 -I{} -P64 -n1 chown -f "${CURRENT_
 # use a bash script for starting py server and redirecting io to a file
 REDIRECT_SCRIPT="./start_with_io_redirection.sh"
 
+# this arg is passed by Dockerfile for hooking this script and build the actual command
 if [ "${1}" = "/usr/bin/true" ]; then
 
 cat << EOF > ${REDIRECT_SCRIPT}
-python3 ${REPO_DEST}/py/server/${BALANCER_PY_NAME}.py  2>&1 | tee  ${WORK_DIR}/logs/balancer_$(date +%Y%m%d_%H%M%S).log 
+env && python ${REPO_DEST}/py/server/${BALANCER_PY_NAME}.py  2>&1 | tee  ${WORK_DIR}/logs/balancer_$(date +%Y%m%d_%H%M%S).log 
 EOF
 chmod 744 ${REDIRECT_SCRIPT}
 set -- bash ${REDIRECT_SCRIPT} 
@@ -90,7 +91,8 @@ echo "Username: ${USERNAME}, UID: ${CURRENT_UID}, GID: ${CURRENT_GID}"
 echo "Balancer py name: ${BALANCER_PY_NAME}"
 echo "Repo dir (source files): ${REPO_DEST}"
 echo "Work dir (logs and data): ${WORK_DIR}"
-echo "Starting zendao balancer via script: [${REDIRECT_SCRIPT}]:"
+echo "Starting zendao balancer via script [${REDIRECT_SCRIPT}]:"
+echo
 cat ${REDIRECT_SCRIPT}
 echo
 echo "Command: '$@'"

@@ -11,7 +11,7 @@ from modules.rosetta_methods import get_mainchain_tip, get_address_balance
 from modules.snapshot_methods import add_mock_ownership_entry, \
     get_mc_address_map, store_proposal_data, \
     proposal_dict, get_owner_sc_addr_list, init_active_proposals, get_proposal_snapshot
-from modules.util_methods import print_incoming, print_outgoing, read_proposals_from_file
+from modules.util_methods import print_incoming, print_outgoing, read_proposals_from_file, dump_balancer_env
 
 
 def api_server():
@@ -142,7 +142,7 @@ def api_server():
 
         return json.dumps(ret)
 
-    logging.getLogger().setLevel(logging.DEBUG)
+    dump_balancer_env()
 
     # warn if some mock attribute is set
     check_mocks()
