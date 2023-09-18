@@ -6,7 +6,7 @@ def get_project_root() -> Path:
     return Path(__file__).parent.parent
 
 
-# The environment for setting the definitions is loaded from .env file
+# The environment for these definitions should already been set 
 # --------------------------------------------------------------------
 
 # Running on local host (for testing/debug)
@@ -35,11 +35,13 @@ ROSETTA_URL = str(os.getenv("ROSETTA_URL"))
 ROSETTA_NETWORK_TYPE = str(os.getenv("ROSETTA_NETWORK_TYPE"))
 
 # Snapshot API server (if not mocked)
-SNAPSHOT_URL = str(os.getenv("SNAPSHOT_URL"))
+SNAPSHOT_URL = str(os.getenv("SNAPSHOT_URL", "https://hub.snapshot.org/graphql"))
 
 # The json file where the active proposal is stored
-PROPOSAL_JSON_DATA_PATH = str(os.getenv("PROPOSAL_JSON_DATA_PATH"))
-PROPOSAL_JSON_DATA_FILE_NAME = str(os.getenv("PROPOSAL_JSON_DATA_FILE_NAME"))
+__PROPOSAL_JSON_DATA_PATH_DEFAULT = str(get_project_root()) + "/"
+__PROPOSAL_JSON_DATA_FILE_NAME_DEFAULT = 'active_proposal.json'
+PROPOSAL_JSON_DATA_PATH = str(os.getenv("PROPOSAL_JSON_DATA_PATH", __PROPOSAL_JSON_DATA_PATH_DEFAULT))
+PROPOSAL_JSON_DATA_FILE_NAME = str(os.getenv("PROPOSAL_JSON_DATA_FILE_NAME", __PROPOSAL_JSON_DATA_FILE_NAME_DEFAULT))
 
 # set true if we can not have rosetta for getting balance
 MOCK_ROSETTA = os.getenv("MOCK_ROSETTA").lower() in ('true', '1', 'y', 'yes')
@@ -52,7 +54,7 @@ MOCK_NSC = os.getenv("MOCK_NSC").lower() in ('true', '1', 'y', 'yes')
 
 # ----------------------------------------------------------------------------------------
 # these constants are used in case we are mocking some module
-MOCK_SNAPSHOT_VALUE = 123456
+MOCK_SNAPSHOT_VALUE = {'data': {'proposal': {'snapshot': '123456'}}}
 
 MOCK_ROSETTA_GET_BALANCE_RESP = {
     "score": [
