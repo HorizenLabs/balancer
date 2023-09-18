@@ -5,8 +5,9 @@ from pathlib import Path
 def get_project_root() -> Path:
     return Path(__file__).parent.parent
 
-#The environment for setting the definitions is loaded from .env file
-#--------------------------------------------------------------------
+
+# The environment for setting the definitions is loaded from .env file
+# --------------------------------------------------------------------
 
 # Running on local host (for testing/debug)
 RUNNING_ON_LOCALHOST = os.getenv("RUNNING_ON_LOCALHOST").lower() in ('true', '1', 'y', 'yes')
@@ -67,7 +68,7 @@ MOCK_ROSETTA_BLOCK_HEIGHT = 100
 MOCK_ROSETTA_NETWORK_STATUS_RETURN = {
     "current_block_identifier": {
         "index": MOCK_ROSETTA_BLOCK_HEIGHT,
-        "hash": MOCK_ROSETTA_BLOCK_HASH    }
+        "hash": MOCK_ROSETTA_BLOCK_HASH}
 }
 
 MOCK_MC_ADDRESS_MAP = {
@@ -93,6 +94,11 @@ def check_mocks():
     if MOCK_NSC:
         print("##################################")
         print("##    MOCKING NSC MODULE        ##")
+        print("##################################")
+
+    if MOCK_SNAPSHOT:
+        print("##################################")
+        print("##    MOCKING SNAPSHOT MODULE   ##")
         print("##################################")
 
 

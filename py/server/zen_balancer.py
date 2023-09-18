@@ -1,3 +1,4 @@
+import logging
 import threading
 
 from flask import Flask, request, json
@@ -141,13 +142,18 @@ def api_server():
 
         return json.dumps(ret)
 
+    logging.getLogger().setLevel(logging.DEBUG)
+
     # warn if some mock attribute is set
     check_mocks()
 
     # read proposals from local file and initialize active proposals if any
+    logging.info("Reading proposal from local file if any...")
     props = read_proposals_from_file()
     if props is not None:
         init_active_proposals(props)
+
+    logging.info("Start listening for incoming requests...")
 
     if LISTENING_ON_HTTP:
         # listen on http port

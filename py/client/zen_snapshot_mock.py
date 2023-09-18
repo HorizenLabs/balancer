@@ -7,7 +7,7 @@ import json
 import urllib3
 
 # squelch warning due to a cert missing an optional field
-urllib3.disable_warnings(urllib3.exceptions.SubjectAltNameWarning)
+#urllib3.disable_warnings(urllib3.exceptions.SubjectAltNameWarning)
 
 LOCAL_HTTP_SERVER_URL = "http://localhost:5000/"
 #LOCAL_HTTP_SERVER_URL = "https://localhost:5000/"
