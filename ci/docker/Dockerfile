@@ -10,27 +10,28 @@ LABEL authors=infrastructure@zensystem.io
 
 # Scoped ARGS
 
-ARG ARG_SC_VERSION
+ARG ARG_BALANCER_GIT_REPO=https://github.com/HorizenLabs/balancer.git
 
-ARG ARG_SC_GITHUB_REPO=
+ARG ARG_BALANCER_COMMITTISH=as/balancer_dockerization
 
-ARG ARG_SC_COMMITTISH
-
-ARG ARG_ZDB_PY_NAME=zen_balancer
+ARG ARG_BALANCER_PY_NAME=zen_balancer
 
 ARG ARG_GOSU_VERSION=1.14
 
 ARG ARG_TINI_VERSION=v0.19.0
 
-ENV SC_VERSION=${ARG_SC_VERSION} \
-    ZDB_PY_NAME=${ARG_ZDB_PY_NAME} \
-    GOSU_VERSION=${ARG_GOSU_VERSION} \
-    TINI_VERSION=${ARG_TINI_VERSION} \
-    SC_COMMITTISH=${ARG_SC_COMMITTISH} \
-    SC_GITHUB_REPO=${ARG_SC_GITHUB_REPO} \
-    REPO_DEST='/EON'
+ARG ARG_WORKDIR=/zendao_balancer
 
-WORKDIR /zendao_balancer
+ENV BALANCER_PY_NAME=${ARG_BALANCER_PY_NAME} \
+    GOSU_VERSION=${ARG_GOSU_VERSION} \
+    PYTHONUNBUFFERED=1 \
+    TINI_VERSION=${ARG_TINI_VERSION} \
+    BALANCER_COMMITTISH=${ARG_BALANCER_COMMITTISH} \
+    BALANCER_GIT_REPO=${ARG_BALANCER_GIT_REPO} \
+    REPO_DEST='/balancer' \
+    WORK_DIR=${ARG_WORKDIR}
+
+WORKDIR ${ARG_WORKDIR}
 
 SHELL ["/bin/bash", "-c"]
 
@@ -47,6 +48,10 @@ RUN set -euo pipefail && chmod +x /usr/local/bin/entrypoint.sh \
       jq \
       netcat-openbsd \
       apache2-utils \
+      python3-pip \
+      python3-dev \
+      build-essential \
+      vim \
     && savedAptMark="$(apt-mark showmanual)" \
     && if ! command -v gosu &> /dev/null; then \
       if ! command -v gpg2 &> /dev/null; then \
@@ -88,8 +93,13 @@ RUN set -euo pipefail && chmod +x /usr/local/bin/entrypoint.sh \
     && apt-mark auto '.*' &> /dev/null && [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark &> /dev/null \
     && DEBIAN_FRONTEND=noninteractive apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
     && rm -rf /var/{lib/apt/lists/*,cache/apt/archives/*.deb} /tmp/* \
-    && git clone ${SC_GITHUB_REPO} ${REPO_DEST} && cd ${REPO_DEST} \
-    && git checkout ${SC_COMMITTISH}
+    && python3 -m pip install --no-cache-dir --upgrade pip \
+    && python3 -m pip install --no-cache-dir flask \
+    && python3 -m pip install --no-cache-dir requests \
+    && python3 -m pip install --no-cache-dir base58 eth_utils eth_abi python-dateutil \
+    && python3 -m pip install --no-cache-dir pycryptodome pysha3 \
+    && git clone ${BALANCER_GIT_REPO} ${REPO_DEST} && cd ${REPO_DEST} \
+    && git checkout ${BALANCER_COMMITTISH}
 
 VOLUME ["/zendao_balancer/datadir/"]
 
@@ -98,5 +108,5 @@ VOLUME ["/zendao_balancer/logs/"]
 ENTRYPOINT ["/usr/local/bin/tini", "--", "/usr/local/bin/entrypoint.sh"]
 
 # This is a placeholder CMD, the actual CMD is constructed in entrypoint.sh based on ENV vars like this:
-# "java -cp '/zendao_balancer/${ARG_ZDB_PY_NAME}-${SC_VERSION}.jar:/zendao_balancer/lib/*' $SC_MAIN_CLASS $SC_CONF_PATH"
+# "java -cp '/zendao_balancer/${ARG_BALANCER_PY_NAME}-${SC_VERSION}.jar:/zendao_balancer/lib/*' $SC_MAIN_CLASS $SC_CONF_PATH"
 CMD ["/usr/bin/true"]
