@@ -1,10 +1,6 @@
 os: linux
 dist: jammy
 language: generic
-addons:
-  apt:
-    packages:
-      - libxml-xpath-perl
 services:
   - docker
 
@@ -13,21 +9,12 @@ git:
 
 env:
   global:
-    - DOCKER_IMAGE_NAME=zendao-balancer
-    - RELEASE_BRANCH=main
+    - DOCKER_IMAGE_NAME=zencash/blockscout
 
-before_script: source ci/setup_env.sh
+before_script:
+  - source ci/setup_env.sh
 
 jobs:
   include:
-    - name: "ZenDAO Balancer Docker Image Build"
-      script: ci/docker.sh
-      if: tag IS present
-
-deploy:
-  provider: releases
-  token: $GITHUB_TOKEN
-  overwrite: true
-  on:
-    tags: true
-    condition: $IS_A_RELEASE = true
+    - name: build_and_publish
+      script: ci/script.sh

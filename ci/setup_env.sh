@@ -1,13 +1,15 @@
 #!/bin/bash
 set -eo pipefail
 
-export IS_A_RELEASE="false"
+IS_A_RELEASE="false"
+export PROD_RELEASE_BRANCH="${PROD_RELEASE_BRANCH:-master}"
 
 if [ -z "${TRAVIS_TAG}" ]; then
-  echo "TRAVIS_TAG:                           No TAG"
+  echo "TRAVIS_TAG:                     No TAG"
 else
-  echo "TRAVIS_TAG:                           ${TRAVIS_TAG}"
+  echo "TRAVIS_TAG:                     ${TRAVIS_TAG}"
 fi
+echo "Production release branch is:   ${PROD_RELEASE_BRANCH}"
 
 # Functions
 function import_gpg_keys() {
@@ -15,7 +17,7 @@ function import_gpg_keys() {
   declare -r my_arr=( $(echo "${@}" | tr " " "\n") )
 
   if [ "${#my_arr[@]}" -eq 0 ]; then
-    echo "Warning: there are ZERO gpg keys to import. Please check if MAINTAINERS_KEYS variable is set correctly. The build is not going to be released ..."
+    echo "Warning: there are ZERO gpg keys to import. Please check if *MAINTAINERS_KEYS variable(s) are set correctly. The build is not going to be released ..."
     export IS_A_RELEASE="false"
   else
     # shellcheck disable=SC2145
@@ -33,37 +35,51 @@ function import_gpg_keys() {
 function check_signed_tag() {
   local tag="${1}"
 
-  # Checking if git tag signed by the maintainers
   if git verify-tag -v "${tag}"; then
     echo "${tag} is a valid signed tag"
-    export IS_A_RELEASE="true"
   else
     echo "" && echo "=== Warning: GIT's tag = ${tag} signature is NOT valid. The build is not going to be released ... ===" && echo ""
+    export IS_A_RELEASE="false"
   fi
 }
 
+# empty key.asc file in case we're not signing
+touch "${HOME}/key.asc"
+
+# Checking if it a release build
 if [ -n "${TRAVIS_TAG}" ]; then
-  echo "TRAVIS_TAG: ${TRAVIS_TAG}"
-  echo "The current production branch is: ${RELEASE_BRANCH}"
 
-  if [[ -z "${MAINTAINERS_KEYS}" ]]; then
-    echo "Warning: MAINTAINERS_KEYS variables is not set. Make sure to set it up for PROD release build !!!"
+  if [ -z "${PROD_MAINTAINERS_KEYS:-}" ]; then
+    echo "Warning: PROD_MAINTAINERS_KEYS variable is not set. Make sure to set it up for PROD|DEV release build !!!"
   fi
-  # shellcheck disable=SC2155
-  export GNUPGHOME="$(mktemp -d 2>/dev/null || mktemp -d -t 'GNUPGHOME')"
 
-  # Prod vs development release
-  if (git branch -r --contains "${TRAVIS_TAG}" | grep -xqE ". origin\/${RELEASE_BRANCH}$"); then
-    echo "" && echo "=== Production release ===" && echo ""
-    # shellcheck disable=SC2086
-    import_gpg_keys "${MAINTAINERS_KEYS}"
-    check_signed_tag "${TRAVIS_TAG}" false
+  if ( git branch -r --contains "${TRAVIS_TAG}" | grep -xqE ". origin\/${PROD_RELEASE_BRANCH}$" ); then
+
+    export IS_A_RELEASE="true"
+
+    import_gpg_keys "${PROD_MAINTAINERS_KEYS}"
+
+    check_signed_tag "${TRAVIS_TAG}"
+
+    # Checking format of production release version
+    if ! [[ "${TRAVIS_TAG}" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9]+)?(-RC[0-9]+)?$ ]]; then
+      echo "Warning: package(s) version is in the wrong format for PRODUCTION release. Expecting: d.d.d(-d)?(-RC[0-9]+)?. The build is not going to be released !!!"
+      export IS_A_RELEASE="false"
+    fi
+
+    # Announcing PROD release
+    if [ "${IS_A_RELEASE}" = "true" ]; then
+      echo "" && echo "=== Production release ===" && echo ""
+    fi
+  else
+    export IS_A_RELEASE="false"
   fi
 fi
 
 # Final check for release vs non-release build
 if [ "${IS_A_RELEASE}" = "false" ]; then
   echo "" && echo "=== NOT a release build ===" && echo ""
+  export IS_A_RELEASE="false"
 fi
 
 set +eo pipefail
