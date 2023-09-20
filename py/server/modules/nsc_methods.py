@@ -74,9 +74,9 @@ def get_nsc_owner_sc_addresses():
 
 
 def handle_response_from_req(request_body, op_tag):
-    print_outgoing("NSC", "/ethv1/eth_call (" + op_tag + ")", request_body)
+    print_outgoing("NSC", NSC_URL+"/ethv1/eth_call (" + op_tag + ")", request_body)
     response = requests.post(NSC_URL + "ethv1", json.dumps(request_body), auth=('user', 'Horizen'))
-    print_incoming("NSC", "/ethv1/eth_call (" + op_tag + ")", response.json())
+    print_incoming("NSC", NSC_URL+"/ethv1/eth_call (" + op_tag + ")", response.json())
     abi_return_value = remove_0x_prefix(response.json()['result'])
     return abi_return_value
 

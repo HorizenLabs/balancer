@@ -1,3 +1,4 @@
+import logging
 import threading
 
 from flask import Flask, request, json
@@ -10,7 +11,7 @@ from modules.rosetta_methods import get_mainchain_tip, get_address_balance
 from modules.snapshot_methods import add_mock_ownership_entry, \
     get_mc_address_map, store_proposal_data, \
     proposal_dict, get_owner_sc_addr_list, init_active_proposals, get_proposal_snapshot
-from modules.util_methods import print_incoming, print_outgoing, read_proposals_from_file
+from modules.util_methods import print_incoming, print_outgoing, read_proposals_from_file, dump_balancer_env
 
 
 def api_server():
@@ -141,13 +142,18 @@ def api_server():
 
         return json.dumps(ret)
 
+    dump_balancer_env()
+
     # warn if some mock attribute is set
     check_mocks()
 
     # read proposals from local file and initialize active proposals if any
+    logging.info("Reading proposal from local file if any...")
     props = read_proposals_from_file()
     if props is not None:
         init_active_proposals(props)
+
+    logging.info("Start listening for incoming requests...")
 
     if LISTENING_ON_HTTP:
         # listen on http port

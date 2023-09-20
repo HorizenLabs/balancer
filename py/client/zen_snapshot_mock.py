@@ -7,14 +7,14 @@ import json
 import urllib3
 
 # squelch warning due to a cert missing an optional field
-urllib3.disable_warnings(urllib3.exceptions.SubjectAltNameWarning)
+#urllib3.disable_warnings(urllib3.exceptions.SubjectAltNameWarning)
 
 LOCAL_HTTP_SERVER_URL = "http://localhost:5000/"
 #LOCAL_HTTP_SERVER_URL = "https://localhost:5000/"
 REMOTE_HTTP_SERVER_URL = "https://zendao-tn-1.de.horizenlabs.io:5000/"
 
-#HTTP_SERVER_URL = LOCAL_HTTP_SERVER_URL
-HTTP_SERVER_URL = REMOTE_HTTP_SERVER_URL
+HTTP_SERVER_URL = LOCAL_HTTP_SERVER_URL
+#HTTP_SERVER_URL = REMOTE_HTTP_SERVER_URL
 
 # if the server is on https we should use a cert
 # ---

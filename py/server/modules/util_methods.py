@@ -1,6 +1,7 @@
 import datetime
 import json
 import logging
+import os
 from binascii import unhexlify
 from json import JSONDecodeError
 
@@ -92,3 +93,19 @@ def warn_if_proposal_not_active(prop):
         )
     else:
         pass
+
+def dump_balancer_env():
+    print("RUNNING_ON_LOCALHOST=" + str(os.getenv("RUNNING_ON_LOCALHOST")))
+    print("LISTENING_ON_HTTP=" + str(os.getenv("LISTENING_ON_HTTP")))
+    print("BALANCER_PORT=" + str(os.getenv("BALANCER_PORT")))
+    print("USING_WSGI_PROXY=" + str(os.getenv("USING_WSGI_PROXY")))
+    print("NSC_URL=" + str(os.getenv("NSC_URL")))
+    print("ETH_CALL_FROM_ADDRESS=" + str(os.getenv("ETH_CALL_FROM_ADDRESS")))
+    print("ROSETTA_URL=" + str(os.getenv("ROSETTA_URL")))
+    print("ROSETTA_NETWORK_TYPE=" + str(os.getenv("ROSETTA_NETWORK_TYPE")))
+    print("SNAPSHOT_URL=" + str(os.getenv("SNAPSHOT_URL", "https://hub.snapshot.org/graphql")))
+    print("PROPOSAL_JSON_DATA_PATH=" + str(os.getenv("PROPOSAL_JSON_DATA_PATH")))
+    print("PROPOSAL_JSON_DATA_FILE_NAME=" + str(os.getenv("PROPOSAL_JSON_DATA_FILE_NAME")))
+    print("MOCK_ROSETTA=" + str(os.getenv("MOCK_ROSETTA")))
+    print("MOCK_SNAPSHOT=" + str(os.getenv("MOCK_SNAPSHOT")))
+    print("MOCK_NSC=" + str(os.getenv("MOCK_NSC")))

@@ -6,30 +6,33 @@ def get_project_root() -> Path:
     return Path(__file__).parent.parent
 
 
+# The environment for these definitions should already been set 
+# --------------------------------------------------------------------
+
 # Running on local host (for testing/debug)
-RUNNING_ON_LOCALHOST = os.getenv("RUNNING_ON_LOCALHOST", 'False').lower() in ('true', '1', 'y', 'yes')
+RUNNING_ON_LOCALHOST = os.getenv("RUNNING_ON_LOCALHOST").lower() in ('true', '1', 'y', 'yes')
 
 # Listening on HTTP (not on HTTPS). This option should be set to true if USING_WSGI_PROXY
-LISTENING_ON_HTTP = os.getenv("LISTENING_ON_HTTP", 'False').lower() in ('true', '1', 'y', 'yes')
+LISTENING_ON_HTTP = os.getenv("LISTENING_ON_HTTP").lower() in ('true', '1', 'y', 'yes')
 
 # port where balancer is listening
-BALANCER_PORT = os.getenv("BALANCER_PORT", 5000)
+BALANCER_PORT = os.getenv("BALANCER_PORT")
 
 # Balancer is using a wsgi proxy (nginx)
-USING_WSGI_PROXY = os.getenv("USING_WSGI_PROXY", 'False').lower() in ('true', '1', 'y', 'yes')
+USING_WSGI_PROXY = os.getenv("USING_WSGI_PROXY").lower() in ('true', '1', 'y', 'yes')
 
 # Native smart contract is reachable via this end point
-NSC_URL = str(os.getenv("NSC_URL", "http://zendao-tn-1.de.horizenlabs.io:8200/"))
+NSC_URL = str(os.getenv("NSC_URL"))
 
 # This is the address which is used for calling eth_call which invokes the NSC. Some fund must be stored there
 # otherwise the call fails (no sufficient balance)
-ETH_CALL_FROM_ADDRESS = str(os.getenv("ETH_CALL_FROM_ADDRESS", "0x00c8f107a09cd4f463afc2f1e6e5bf6022ad4600"))
+ETH_CALL_FROM_ADDRESS = str(os.getenv("ETH_CALL_FROM_ADDRESS"))
 
 # A rosetta instance is running locally (if not mocked)
-ROSETTA_URL = str(os.getenv("ROSETTA_URL", "http://localhost:8080/"))
+ROSETTA_URL = str(os.getenv("ROSETTA_URL"))
 
 # The network type which rosetta is running on. Can be 'test' or 'main'
-ROSETTA_NETWORK_TYPE = str(os.getenv("ROSETTA_NETWORK_TYPE", "test"))
+ROSETTA_NETWORK_TYPE = str(os.getenv("ROSETTA_NETWORK_TYPE"))
 
 # Snapshot API server (if not mocked)
 SNAPSHOT_URL = str(os.getenv("SNAPSHOT_URL", "https://hub.snapshot.org/graphql"))
@@ -41,17 +44,17 @@ PROPOSAL_JSON_DATA_PATH = str(os.getenv("PROPOSAL_JSON_DATA_PATH", __PROPOSAL_JS
 PROPOSAL_JSON_DATA_FILE_NAME = str(os.getenv("PROPOSAL_JSON_DATA_FILE_NAME", __PROPOSAL_JSON_DATA_FILE_NAME_DEFAULT))
 
 # set true if we can not have rosetta for getting balance
-MOCK_ROSETTA = os.getenv("MOCK_ROSETTA", 'False').lower() in ('true', '1', 'y', 'yes')
+MOCK_ROSETTA = os.getenv("MOCK_ROSETTA").lower() in ('true', '1', 'y', 'yes')
 
 # set true if we do not have snapshot.org for getting proposal details
-MOCK_SNAPSHOT = os.getenv("MOCK_SNAPSHOT", 'False').lower() in ('true', '1', 'y', 'yes')
+MOCK_SNAPSHOT = os.getenv("MOCK_SNAPSHOT").lower() in ('true', '1', 'y', 'yes')
 
 # set true if we can not interact with a real Native Smart Contract
-MOCK_NSC = os.getenv("MOCK_NSC", 'False').lower() in ('true', '1', 'y', 'yes')
+MOCK_NSC = os.getenv("MOCK_NSC").lower() in ('true', '1', 'y', 'yes')
 
 # ----------------------------------------------------------------------------------------
 # these constants are used in case we are mocking some module
-MOCK_SNAPSHOT_VALUE = 123456
+MOCK_SNAPSHOT_VALUE = {'data': {'proposal': {'snapshot': '123456'}}}
 
 MOCK_ROSETTA_GET_BALANCE_RESP = {
     "score": [
@@ -67,7 +70,7 @@ MOCK_ROSETTA_BLOCK_HEIGHT = 100
 MOCK_ROSETTA_NETWORK_STATUS_RETURN = {
     "current_block_identifier": {
         "index": MOCK_ROSETTA_BLOCK_HEIGHT,
-        "hash": MOCK_ROSETTA_BLOCK_HASH    }
+        "hash": MOCK_ROSETTA_BLOCK_HASH}
 }
 
 MOCK_MC_ADDRESS_MAP = {
@@ -93,6 +96,11 @@ def check_mocks():
     if MOCK_NSC:
         print("##################################")
         print("##    MOCKING NSC MODULE        ##")
+        print("##################################")
+
+    if MOCK_SNAPSHOT:
+        print("##################################")
+        print("##    MOCKING SNAPSHOT MODULE   ##")
         print("##################################")
 
 
